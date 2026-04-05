@@ -1,0 +1,23 @@
+{
+  "name": "@atlas/contracts",
+  "version": "1.0.0",
+  "description": "Shared scan-bundle contract definitions for Atlas and future scan clients",
+  "type": "module",
+  "main": "./dist/scan/index.js",
+  "types": "./dist/scan/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/scan/index.js",
+      "types": "./dist/scan/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.0"
+  }
+}
