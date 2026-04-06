@@ -110,6 +110,42 @@ final class AtlasContractsTests: XCTestCase {
         XCTAssertEqual(manifest.scannerApp, "AtlasScan 1.0.0")
     }
 
+    func testImportSummaryIsAccessibleAsMember() throws {
+        let data = validSingleRoomJSON.data(using: .utf8)!
+        let result = validateScanBundle(data)
+        let bundle = try XCTUnwrap(result.bundle)
+        let manifest = ScanImportManifest(from: bundle)
+        // Verify ScanImportManifest.ImportSummary is a reachable public type.
+        let summary: ScanImportManifest.ImportSummary = manifest.importSummary
+        XCTAssertEqual(summary.version, manifest.version)
+        XCTAssertEqual(summary.bundleId, manifest.bundleId)
+        XCTAssertEqual(summary.roomCount, manifest.roomCount)
+        XCTAssertEqual(summary.anchorCount, manifest.anchorCount)
+        XCTAssertEqual(summary.qaFlagCount, manifest.qaFlagCount)
+        XCTAssertEqual(summary.deviceModel, manifest.deviceModel)
+        XCTAssertEqual(summary.scannerApp, manifest.scannerApp)
+        XCTAssertEqual(summary.capturedAt, manifest.capturedAt)
+    }
+
+    func testImportSummaryDirectInit() {
+        // Verify ScanImportManifest.ImportSummary has a public memberwise init.
+        let summary = ScanImportManifest.ImportSummary(
+            version: "1.0",
+            bundleId: "test-bundle",
+            roomCount: 2,
+            anchorCount: 1,
+            qaFlagCount: 0,
+            deviceModel: "iPhone 15 Pro",
+            scannerApp: "AtlasScan 1.0.0",
+            capturedAt: "2025-06-01T10:00:00Z"
+        )
+        XCTAssertEqual(summary.version, "1.0")
+        XCTAssertEqual(summary.bundleId, "test-bundle")
+        XCTAssertEqual(summary.roomCount, 2)
+        XCTAssertEqual(summary.anchorCount, 1)
+        XCTAssertEqual(summary.qaFlagCount, 0)
+    }
+
     // MARK: - Codable round-trip
 
     func testScanBundleRoundTrip() throws {
