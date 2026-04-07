@@ -8,10 +8,10 @@ import Foundation
 
 /// A lightweight summary of a validated scan bundle, intended for the Atlas
 /// importer to decide how to process the bundle.
-public struct ScanImportManifest: Sendable, Equatable {
+public struct ScanImportManifest: Codable, Sendable, Equatable {
 
     /// A distilled, importer-facing summary of the manifest's key fields.
-    public struct ImportSummary: Sendable, Equatable {
+    public struct ImportSummary: Codable, Sendable, Equatable {
         /// The contract version of the source bundle.
         public let version: String
         /// The unique identifier of the source bundle.
@@ -66,6 +66,8 @@ public struct ScanImportManifest: Sendable, Equatable {
     public let scannerApp: String
     /// ISO-8601 timestamp of when the scan was captured.
     public let capturedAt: String
+    /// Schema version of this manifest format.
+    public let schemaVersion: String
 
     /// A distilled summary of the manifest, suitable for passing to the Atlas importer.
     public var importSummary: ImportSummary {
@@ -83,6 +85,7 @@ public struct ScanImportManifest: Sendable, Equatable {
 
     /// Creates a manifest from a validated scan bundle.
     public init(from bundle: ScanBundle) {
+        self.schemaVersion = "1.0"
         self.version = bundle.version
         self.bundleId = bundle.bundleId
         self.roomCount = bundle.rooms.count
