@@ -101,6 +101,7 @@ final class AtlasContractsTests: XCTestCase {
         let result = validateScanBundle(data)
         let bundle = try XCTUnwrap(result.bundle)
         let manifest = ScanImportManifest(from: bundle)
+        XCTAssertEqual(manifest.schemaVersion, "1.0")
         XCTAssertEqual(manifest.version, "1.0")
         XCTAssertEqual(manifest.bundleId, "fixture-single-room-001")
         XCTAssertEqual(manifest.roomCount, 1)
@@ -154,6 +155,17 @@ final class AtlasContractsTests: XCTestCase {
         let reEncoded = try JSONEncoder().encode(bundle)
         let decoded = try JSONDecoder().decode(ScanBundleV1.self, from: reEncoded)
         XCTAssertEqual(bundle, decoded)
+    }
+
+    func testScanImportManifestRoundTrip() throws {
+        let data = validSingleRoomJSON.data(using: .utf8)!
+        let result = validateScanBundle(data)
+        let bundle = try XCTUnwrap(result.bundle)
+        let manifest = ScanImportManifest(from: bundle)
+        let encoded = try JSONEncoder().encode(manifest)
+        let decoded = try JSONDecoder().decode(ScanImportManifest.self, from: encoded)
+        XCTAssertEqual(manifest, decoded)
+        XCTAssertEqual(decoded.schemaVersion, "1.0")
     }
 }
 
