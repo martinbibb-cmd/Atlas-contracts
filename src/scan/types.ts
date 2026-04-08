@@ -211,7 +211,14 @@ export interface ScanMeta {
 // ─── Top-level bundle ─────────────────────────────────────────────────────────
 
 /**
- * ScanBundleV1 — the top-level unit of data sent from a future scan client.
+ * ScanBundleV1 — the raw scan-geometry payload sent from a scan client.
+ *
+ * This type carries **only** the geometry and scan metadata produced by the
+ * scanner: rooms, walls, anchors, QA flags, and scan session metadata.
+ *
+ * Session-level artefacts captured during the same visit (voice notes, photos,
+ * tagged objects, etc.) belong on VisitCapture, not here.  Keeping this type
+ * focused on raw scan geometry ensures the contract boundary remains clear.
  *
  * version  — contract version string; must be one of SUPPORTED_SCAN_BUNDLE_VERSIONS.
  *            The importer rejects bundles whose version is not supported.
@@ -235,6 +242,10 @@ export interface ScanBundleV1 {
  *
  * Use this type when accepting an unknown bundle (e.g. from a file or network).
  * The importer inspects the `version` field to select the correct handler.
+ *
+ * Note: ScanBundle / ScanBundleV1 carries only raw scan geometry.
+ * For the complete portable visit artifact (scan + voice notes + future artefacts)
+ * use VisitCapture.
  */
 export type ScanBundle = ScanBundleV1;
 
@@ -243,3 +254,99 @@ export type ScanBundle = ScanBundleV1;
  * been confirmed to match any versioned contract.
  */
 export type UnknownScanBundle = Record<string, unknown>;
+
+// ─── Voice note types ─────────────────────────────────────────────────────────
+
+/**
+ * Semantic category of a voice note.
+ *
+ * observation        — a general field observation
+ * customerPreference — a captured customer preference or request
+ * installConstraint  — an installation constraint noted during capture
+ * risk               — a risk item flagged during capture
+ * followUp           — a follow-up action to be taken after the visit
+ * other              — uncategorised note
+ */
+export type VoiceNoteKind =
+  | 'observation'
+  | 'customerPreference'
+  | 'installConstraint'
+  | 'risk'
+  | 'followUp'
+  | 'other';
+
+/**
+ * Status of an automatic speech-to-text transcript for a voice note.
+ *
+ * notRequested — no transcript has been requested
+ * pending      — transcript has been requested and is being processed
+ * complete     — transcript is available
+ * failed       — transcription attempt failed
+ */
+export type TranscriptStatus = 'notRequested' | 'pending' | 'complete' | 'failed';
+
+/**
+ * Upload / remote synchronisation state of a voice note asset.
+ *
+ * localOnly — audio exists only on the local device; not yet queued for upload
+ * queued    — queued for upload but not yet transferred
+ * uploaded  — successfully uploaded to remote storage
+ * failed    — upload attempt failed; retry may be possible
+ */
+export type VoiceNoteSyncState = 'localOnly' | 'queued' | 'uploaded' | 'failed';
+
+/**
+ * A portable voice note attached to a visit session.
+ *
+ * A VoiceNote may be linked to an individual room (linkedRoomID) or a detected
+ * object (linkedObjectID), or it may stand as a session-level note when both
+ * link fields are absent.
+ *
+ * All optional fields are absent-safe: older payloads that lack them remain
+ * decodable.  transcriptStatus defaults to 'notRequested' and syncState
+ * defaults to 'localOnly' when not present.
+ */
+export interface VoiceNote {
+  /** Unique identifier for this voice note (UUID string). */
+  id: string;
+  /** ISO-8601 timestamp of when the note was recorded. */
+  createdAt: string;
+  /** Duration of the audio recording in seconds. */
+  duration: number;
+  /** Local audio filename (on-device; may be absent in remote payloads). */
+  localFilename?: string;
+  /** Remote asset identifier once the audio has been uploaded. */
+  remoteAssetID?: string;
+  /** ID of the room this note is linked to, if any (UUID string). */
+  linkedRoomID?: string;
+  /** ID of the detected object this note is linked to, if any (UUID string). */
+  linkedObjectID?: string;
+  /** Semantic category of this note. */
+  kind: VoiceNoteKind;
+  /** Optional free-text caption supplied by the operator. */
+  caption?: string;
+  /** Transcript text, once available. */
+  transcript?: string;
+  /** Current status of the speech-to-text transcript. */
+  transcriptStatus: TranscriptStatus;
+  /** Current upload / remote sync state. */
+  syncState: VoiceNoteSyncState;
+}
+
+// ─── Visit capture ────────────────────────────────────────────────────────────
+
+/**
+ * VisitCapture — the portable top-level artifact for a complete property visit session.
+ *
+ * A VisitCapture wraps the raw scan-geometry bundle (ScanBundleV1) and augments
+ * it with session-level artefacts such as voice notes.  Future artefact types
+ * (photos, tagged objects, issues, session metadata) will also be added here,
+ * not to ScanBundleV1.
+ *
+ * scanBundle  — the raw scan-geometry bundle captured during this visit
+ * voiceNotes  — voice notes recorded during the visit session (optional; defaults to [])
+ */
+export interface VisitCapture {
+  scanBundle: ScanBundleV1;
+  voiceNotes?: VoiceNote[];
+}

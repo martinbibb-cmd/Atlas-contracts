@@ -8,14 +8,26 @@ This package defines the **external boundary** between any native scan client (s
 
 It is intentionally small and boring. It exists so both sides of the boundary can agree on a single, versioned, tested definition of what a scan bundle looks like — without any application logic leaking in either direction.
 
+## Contract boundary
+
+Two distinct top-level types exist at different levels of abstraction:
+
+| Type | Role |
+|------|------|
+| `ScanBundleV1` | **Raw scan-geometry payload.** Rooms, walls, anchors, QA flags, scan metadata. This is what the scanner produces. |
+| `VisitCapture` | **Portable visit/session artifact.** Wraps `ScanBundleV1` and adds session-level artefacts: voice notes, and (in future) photos, tagged objects, issues, and session metadata. |
+
+`ScanBundleV1` is intentionally narrow — it must stay focused on scan geometry so the import boundary remains clear.  Session-level artefacts such as voice notes belong on `VisitCapture`, not on `ScanBundleV1`.
+
 ## What lives here
 
 | Path | Contents |
 |------|----------|
-| `src/scan/types.ts` | All scan entity types (`ScanBundleV1`, `ScanRoom`, `ScanWall`, etc.) |
+| `src/scan/types.ts` | All scan entity types (`ScanBundleV1`, `VoiceNote`, `VisitCapture`, etc.) |
 | `src/scan/versions.ts` | `SUPPORTED_SCAN_BUNDLE_VERSIONS` constant + version-check helpers |
 | `src/scan/validation.ts` | Runtime validation with type-safe assertion boundary |
 | `src/scan/index.ts` | Barrel re-export of the public surface |
+| `Sources/AtlasContracts/` | Swift mirror of the contract types (SwiftPM package) |
 | `fixtures/` | Six canonical test fixtures (valid, invalid, unsupported) |
 | `tests/` | Vitest tests for the validation boundary |
 
@@ -26,6 +38,7 @@ It is intentionally small and boring. It exists so both sides of the boundary ca
 - Canonical Atlas entity types
 - Recommendation engine logic
 - RoomPlan-specific integration code
+- App-layer playback state, recorder state, or view-model fields
 - Any application UI
 
 **Atlas remains the sole owner of canonical truth and importer/mapping behaviour.**
@@ -34,7 +47,9 @@ It is intentionally small and boring. It exists so both sides of the boundary ca
 
 ```ts
 import { validateScanBundle, SUPPORTED_SCAN_BUNDLE_VERSIONS } from '@atlas/contracts';
+import type { VisitCapture } from '@atlas/contracts';
 
+// Validate the raw scan bundle
 const result = validateScanBundle(rawJson);
 if (!result.ok) {
   console.error('Invalid scan bundle:', result.errors);
@@ -42,6 +57,20 @@ if (!result.ok) {
 }
 // result.bundle is typed as ScanBundleV1 — no sloppy cast
 const bundle = result.bundle;
+
+// Combine with session-level artefacts into a portable VisitCapture
+const visitCapture: VisitCapture = {
+  scanBundle: bundle,
+  voiceNotes: capturedVoiceNotes,
+};
+```
+
+## Voice notes
+
+`VoiceNote` is a portable contract shared between Atlas, the engineer portal, and the customer portal. Voice notes belong to the visit session, not to the raw scan geometry, so they live on `VisitCapture.voiceNotes`.
+
+```ts
+import type { VoiceNote, VoiceNoteKind, TranscriptStatus, VoiceNoteSyncState } from '@atlas/contracts';
 ```
 
 ## Contract ownership rules
@@ -74,5 +103,5 @@ const bundle = result.bundle;
 npm install
 npm run build   # TypeScript compilation
 npm test        # Vitest test run
+swift test      # Swift XCTest suite
 ```
-
