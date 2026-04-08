@@ -24,6 +24,11 @@ export type {
   ScanBundleV1,
   ScanBundle,
   UnknownScanBundle,
+  VoiceNoteKind,
+  TranscriptStatus,
+  VoiceNoteSyncState,
+  VoiceNote,
+  VisitCapture,
 } from './types';
 
 export { SUPPORTED_SCAN_BUNDLE_VERSIONS, isSupportedVersion, isUnsupportedVersion } from './versions';

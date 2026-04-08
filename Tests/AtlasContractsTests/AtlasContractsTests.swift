@@ -255,42 +255,74 @@ final class AtlasContractsTests: XCTestCase {
         XCTAssertEqual(VoiceNoteSyncState.failed.rawValue, "failed")
     }
 
-    // MARK: - ScanBundleV1 backward-compatible decode (no voiceNotes field)
+    // MARK: - VisitCapture round-trip with voice notes
 
-    func testScanBundleDecodesWithoutVoiceNotesField() throws {
-        let data = validSingleRoomJSON.data(using: .utf8)!
-        let bundle = try JSONDecoder().decode(ScanBundleV1.self, from: data)
-        XCTAssertEqual(bundle.voiceNotes, [])
-    }
+    func testVisitCaptureRoundTrip() throws {
+        let data = validVisitCaptureJSON.data(using: .utf8)!
+        let capture = try JSONDecoder().decode(VisitCapture.self, from: data)
+        XCTAssertEqual(capture.voiceNotes.count, 2)
+        XCTAssertEqual(capture.scanBundle.bundleId, "fixture-visit-capture-001")
 
-    // MARK: - ScanBundleV1 round-trip with embedded voice notes
-
-    func testScanBundleRoundTripWithVoiceNotes() throws {
-        let data = validSingleRoomWithVoiceNotesJSON.data(using: .utf8)!
-        let bundle = try JSONDecoder().decode(ScanBundleV1.self, from: data)
-        XCTAssertEqual(bundle.voiceNotes.count, 2)
-
-        let first = try XCTUnwrap(bundle.voiceNotes.first)
+        let first = try XCTUnwrap(capture.voiceNotes.first)
         XCTAssertEqual(first.kind, .observation)
         XCTAssertEqual(first.transcriptStatus, .complete)
         XCTAssertEqual(first.syncState, .uploaded)
         XCTAssertEqual(first.transcript, "Check the radiator in the corner")
 
-        let second = bundle.voiceNotes[1]
+        let second = capture.voiceNotes[1]
         XCTAssertEqual(second.kind, .customerPreference)
         XCTAssertEqual(second.transcriptStatus, .notRequested)
         XCTAssertEqual(second.syncState, .localOnly)
 
         // Encode and decode again to verify full round-trip.
-        let reEncoded = try JSONEncoder().encode(bundle)
-        let decoded = try JSONDecoder().decode(ScanBundleV1.self, from: reEncoded)
-        XCTAssertEqual(bundle, decoded)
+        let reEncoded = try JSONEncoder().encode(capture)
+        let decoded = try JSONDecoder().decode(VisitCapture.self, from: reEncoded)
+        XCTAssertEqual(capture, decoded)
     }
 
-    func testScanBundleValidationAcceptsBundleWithVoiceNotes() {
-        let result = validateScanBundle(validSingleRoomWithVoiceNotesJSON)
+    func testVisitCaptureDecodesWithoutVoiceNotesField() throws {
+        // A VisitCapture payload with no voiceNotes key must decode to an empty array.
+        let json = """
+        {
+          "scanBundle": {
+            "version": "1.0",
+            "bundleId": "test-no-voice-001",
+            "rooms": [],
+            "anchors": [],
+            "qaFlags": [],
+            "meta": {
+              "capturedAt": "2025-06-01T10:00:00Z",
+              "deviceModel": "iPhone 15 Pro",
+              "scannerApp": "AtlasScan 1.0.0",
+              "coordinateConvention": "metric_m"
+            }
+          }
+        }
+        """
+        let capture = try JSONDecoder().decode(VisitCapture.self, from: json.data(using: .utf8)!)
+        XCTAssertEqual(capture.voiceNotes, [])
+        XCTAssertEqual(capture.scanBundle.bundleId, "test-no-voice-001")
+    }
+
+    func testVisitCaptureScanBundleIsValidatable() throws {
+        // The scanBundle embedded in a VisitCapture must be independently
+        // validatable via validateScanBundle.
+        let data = validVisitCaptureJSON.data(using: .utf8)!
+        let capture = try JSONDecoder().decode(VisitCapture.self, from: data)
+        let bundleData = try JSONEncoder().encode(capture.scanBundle)
+        let result = validateScanBundle(bundleData)
         XCTAssertTrue(result.isValid)
-        XCTAssertEqual(result.bundle?.voiceNotes.count, 2)
+    }
+
+    // MARK: - ScanBundleV1 ignores unknown top-level keys (regression guard)
+
+    func testScanBundleDecodesLegacyPayloadIgnoringUnknownKeys() throws {
+        // Confirm ScanBundleV1 decodes a payload that has extra unknown keys
+        // (e.g. a legacy payload that placed voiceNotes directly on the bundle).
+        let data = validSingleRoomWithVoiceNotesJSON.data(using: .utf8)!
+        let bundle = try JSONDecoder().decode(ScanBundleV1.self, from: data)
+        XCTAssertEqual(bundle.bundleId, "fixture-voice-notes-001")
+        XCTAssertEqual(bundle.rooms.count, 1)
     }
 }
 
@@ -388,6 +420,63 @@ private let validSingleRoomWithVoiceNotesJSON = """
     "deviceModel": "iPhone 15 Pro",
     "scannerApp": "AtlasScan 1.0.0",
     "coordinateConvention": "metric_m"
+  },
+  "voiceNotes": [
+    {
+      "id": "00000000-0000-0000-0000-000000000010",
+      "createdAt": "2025-06-01T10:05:00Z",
+      "duration": 12.5,
+      "localFilename": "note-001.m4a",
+      "remoteAssetID": "asset-remote-001",
+      "linkedRoomID": "00000000-0000-0000-0000-000000000020",
+      "kind": "observation",
+      "caption": "Check the radiator",
+      "transcript": "Check the radiator in the corner",
+      "transcriptStatus": "complete",
+      "syncState": "uploaded"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000011",
+      "createdAt": "2025-06-01T10:08:00Z",
+      "duration": 6.0,
+      "kind": "customerPreference"
+    }
+  ]
+}
+"""
+
+/// A VisitCapture payload with two voice notes — used by VisitCapture tests.
+private let validVisitCaptureJSON = """
+{
+  "scanBundle": {
+    "version": "1.0",
+    "bundleId": "fixture-visit-capture-001",
+    "rooms": [
+      {
+        "id": "room-living-01",
+        "label": "Living Room",
+        "floorIndex": 0,
+        "polygon": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 4.5, "y": 0.0 },
+          { "x": 4.5, "y": 3.8 },
+          { "x": 0.0, "y": 3.8 }
+        ],
+        "areaM2": 17.1,
+        "heightM": 2.4,
+        "walls": [],
+        "detectedObjects": [],
+        "confidence": "high"
+      }
+    ],
+    "anchors": [],
+    "qaFlags": [],
+    "meta": {
+      "capturedAt": "2025-06-01T10:00:00Z",
+      "deviceModel": "iPhone 15 Pro",
+      "scannerApp": "AtlasScan 1.0.0",
+      "coordinateConvention": "metric_m"
+    }
   },
   "voiceNotes": [
     {
