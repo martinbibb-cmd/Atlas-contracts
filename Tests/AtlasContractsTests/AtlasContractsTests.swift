@@ -167,6 +167,131 @@ final class AtlasContractsTests: XCTestCase {
         XCTAssertEqual(manifest, decoded)
         XCTAssertEqual(decoded.schemaVersion, "1.0")
     }
+
+    // MARK: - VoiceNote Codable round-trip
+
+    func testVoiceNoteRoundTrip() throws {
+        let note = VoiceNote(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+            createdAt: "2025-06-01T10:00:00Z",
+            duration: 12.5,
+            localFilename: "note-001.m4a",
+            remoteAssetID: "asset-remote-001",
+            linkedRoomID: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+            linkedObjectID: nil,
+            kind: .observation,
+            caption: "Check the radiator",
+            transcript: "Check the radiator in the corner",
+            transcriptStatus: .complete,
+            syncState: .uploaded
+        )
+        let encoded = try JSONEncoder().encode(note)
+        let decoded = try JSONDecoder().decode(VoiceNote.self, from: encoded)
+        XCTAssertEqual(note, decoded)
+    }
+
+    func testVoiceNoteDefaultsInInit() {
+        let note = VoiceNote(
+            id: UUID(),
+            createdAt: "2025-06-01T10:00:00Z",
+            duration: 5.0,
+            kind: .other
+        )
+        XCTAssertNil(note.localFilename)
+        XCTAssertNil(note.remoteAssetID)
+        XCTAssertNil(note.linkedRoomID)
+        XCTAssertNil(note.linkedObjectID)
+        XCTAssertNil(note.caption)
+        XCTAssertNil(note.transcript)
+        XCTAssertEqual(note.transcriptStatus, .notRequested)
+        XCTAssertEqual(note.syncState, .localOnly)
+    }
+
+    // MARK: - VoiceNote backward-compatible decode (missing optional fields)
+
+    func testVoiceNoteDecodesWithMinimalPayload() throws {
+        let json = """
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "createdAt": "2025-06-01T09:00:00Z",
+          "duration": 7.2,
+          "kind": "risk"
+        }
+        """
+        let note = try JSONDecoder().decode(VoiceNote.self, from: json.data(using: .utf8)!)
+        XCTAssertEqual(note.kind, .risk)
+        XCTAssertNil(note.localFilename)
+        XCTAssertNil(note.remoteAssetID)
+        XCTAssertNil(note.linkedRoomID)
+        XCTAssertNil(note.linkedObjectID)
+        XCTAssertNil(note.caption)
+        XCTAssertNil(note.transcript)
+        XCTAssertEqual(note.transcriptStatus, .notRequested)
+        XCTAssertEqual(note.syncState, .localOnly)
+    }
+
+    // MARK: - VoiceNoteKind enum serialisation
+
+    func testVoiceNoteKindRawValues() {
+        XCTAssertEqual(VoiceNoteKind.observation.rawValue, "observation")
+        XCTAssertEqual(VoiceNoteKind.customerPreference.rawValue, "customerPreference")
+        XCTAssertEqual(VoiceNoteKind.installConstraint.rawValue, "installConstraint")
+        XCTAssertEqual(VoiceNoteKind.risk.rawValue, "risk")
+        XCTAssertEqual(VoiceNoteKind.followUp.rawValue, "followUp")
+        XCTAssertEqual(VoiceNoteKind.other.rawValue, "other")
+    }
+
+    func testTranscriptStatusRawValues() {
+        XCTAssertEqual(TranscriptStatus.notRequested.rawValue, "notRequested")
+        XCTAssertEqual(TranscriptStatus.pending.rawValue, "pending")
+        XCTAssertEqual(TranscriptStatus.complete.rawValue, "complete")
+        XCTAssertEqual(TranscriptStatus.failed.rawValue, "failed")
+    }
+
+    func testVoiceNoteSyncStateRawValues() {
+        XCTAssertEqual(VoiceNoteSyncState.localOnly.rawValue, "localOnly")
+        XCTAssertEqual(VoiceNoteSyncState.queued.rawValue, "queued")
+        XCTAssertEqual(VoiceNoteSyncState.uploaded.rawValue, "uploaded")
+        XCTAssertEqual(VoiceNoteSyncState.failed.rawValue, "failed")
+    }
+
+    // MARK: - ScanBundleV1 backward-compatible decode (no voiceNotes field)
+
+    func testScanBundleDecodesWithoutVoiceNotesField() throws {
+        let data = validSingleRoomJSON.data(using: .utf8)!
+        let bundle = try JSONDecoder().decode(ScanBundleV1.self, from: data)
+        XCTAssertEqual(bundle.voiceNotes, [])
+    }
+
+    // MARK: - ScanBundleV1 round-trip with embedded voice notes
+
+    func testScanBundleRoundTripWithVoiceNotes() throws {
+        let data = validSingleRoomWithVoiceNotesJSON.data(using: .utf8)!
+        let bundle = try JSONDecoder().decode(ScanBundleV1.self, from: data)
+        XCTAssertEqual(bundle.voiceNotes.count, 2)
+
+        let first = try XCTUnwrap(bundle.voiceNotes.first)
+        XCTAssertEqual(first.kind, .observation)
+        XCTAssertEqual(first.transcriptStatus, .complete)
+        XCTAssertEqual(first.syncState, .uploaded)
+        XCTAssertEqual(first.transcript, "Check the radiator in the corner")
+
+        let second = bundle.voiceNotes[1]
+        XCTAssertEqual(second.kind, .customerPreference)
+        XCTAssertEqual(second.transcriptStatus, .notRequested)
+        XCTAssertEqual(second.syncState, .localOnly)
+
+        // Encode and decode again to verify full round-trip.
+        let reEncoded = try JSONEncoder().encode(bundle)
+        let decoded = try JSONDecoder().decode(ScanBundleV1.self, from: reEncoded)
+        XCTAssertEqual(bundle, decoded)
+    }
+
+    func testScanBundleValidationAcceptsBundleWithVoiceNotes() {
+        let result = validateScanBundle(validSingleRoomWithVoiceNotesJSON)
+        XCTAssertTrue(result.isValid)
+        XCTAssertEqual(result.bundle?.voiceNotes.count, 2)
+    }
 }
 
 // MARK: - Fixtures
@@ -231,5 +356,59 @@ private let validSingleRoomJSON = """
     "propertyRef": "visit-fixture-001",
     "operatorNotes": "Clear scan, good lighting"
   }
+}
+"""
+
+private let validSingleRoomWithVoiceNotesJSON = """
+{
+  "version": "1.0",
+  "bundleId": "fixture-voice-notes-001",
+  "rooms": [
+    {
+      "id": "room-living-01",
+      "label": "Living Room",
+      "floorIndex": 0,
+      "polygon": [
+        { "x": 0.0, "y": 0.0 },
+        { "x": 4.5, "y": 0.0 },
+        { "x": 4.5, "y": 3.8 },
+        { "x": 0.0, "y": 3.8 }
+      ],
+      "areaM2": 17.1,
+      "heightM": 2.4,
+      "walls": [],
+      "detectedObjects": [],
+      "confidence": "high"
+    }
+  ],
+  "anchors": [],
+  "qaFlags": [],
+  "meta": {
+    "capturedAt": "2025-06-01T10:00:00Z",
+    "deviceModel": "iPhone 15 Pro",
+    "scannerApp": "AtlasScan 1.0.0",
+    "coordinateConvention": "metric_m"
+  },
+  "voiceNotes": [
+    {
+      "id": "00000000-0000-0000-0000-000000000010",
+      "createdAt": "2025-06-01T10:05:00Z",
+      "duration": 12.5,
+      "localFilename": "note-001.m4a",
+      "remoteAssetID": "asset-remote-001",
+      "linkedRoomID": "00000000-0000-0000-0000-000000000020",
+      "kind": "observation",
+      "caption": "Check the radiator",
+      "transcript": "Check the radiator in the corner",
+      "transcriptStatus": "complete",
+      "syncState": "uploaded"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000011",
+      "createdAt": "2025-06-01T10:08:00Z",
+      "duration": 6.0,
+      "kind": "customerPreference"
+    }
+  ]
 }
 """
