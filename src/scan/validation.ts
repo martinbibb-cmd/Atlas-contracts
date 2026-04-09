@@ -17,7 +17,7 @@
  */
 
 import { SUPPORTED_SCAN_BUNDLE_VERSIONS } from './versions';
-import type { ScanBundle, ScanBundleV1, UnknownScanBundle } from './types';
+import type { ScanBundle, ScanBundleV1, UnknownScanBundle, SessionCaptureV1, UnknownSessionCapture } from './types';
 
 // ─── Validation result types ──────────────────────────────────────────────────
 
@@ -248,4 +248,280 @@ export function validateScanBundle(input: unknown): ScanValidationResult {
   // shape — no sloppy cast.
   assertIsScanBundleV1(raw);
   return { ok: true, bundle: raw };
+}
+
+// ─── SessionCaptureV1 validation ──────────────────────────────────────────────
+
+export interface SessionCaptureValidationSuccess {
+  ok: true;
+  session: SessionCaptureV1;
+}
+
+export interface SessionCaptureValidationFailure {
+  ok: false;
+  errors: string[];
+}
+
+export type SessionCaptureValidationResult =
+  | SessionCaptureValidationSuccess
+  | SessionCaptureValidationFailure;
+
+/** Supported SessionCaptureV1 contract versions. */
+const SUPPORTED_SESSION_CAPTURE_VERSIONS = ['1.0'] as const;
+
+const VALID_SESSION_STATUSES = ['active', 'review', 'ready', 'synced'] as const;
+const VALID_ROOM_STATUSES = ['active', 'complete'] as const;
+const VALID_OBJECT_TYPES = [
+  'radiator',
+  'boiler',
+  'cylinder',
+  'thermostat',
+  'flue',
+  'pipe',
+  'consumer_unit',
+  'other',
+] as const;
+const VALID_OBJECT_STATUSES = ['placed', 'confirmed'] as const;
+const VALID_PHOTO_SCOPES = ['session', 'room', 'object'] as const;
+const VALID_NOTE_CATEGORIES = [
+  'constraint',
+  'observation',
+  'preference',
+  'risk',
+  'follow_up',
+] as const;
+const VALID_EVENT_TYPES = [
+  'room_assigned',
+  'object_added',
+  'photo_taken',
+  'note_marker_added',
+  'room_finished',
+] as const;
+const VALID_TRANSCRIPTION_STATUSES = ['pending', 'processing', 'complete'] as const;
+
+function validateRoomV1(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isString(value['roomId'])) errors.push(`${path}.roomId: must be a string`);
+  if (!isString(value['label'])) errors.push(`${path}.label: must be a string`);
+  if (!(VALID_ROOM_STATUSES as readonly string[]).includes(value['status'] as string)) {
+    errors.push(`${path}.status: must be 'active' | 'complete'`);
+  }
+  return errors;
+}
+
+function validateObjectV1(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isString(value['objectId'])) errors.push(`${path}.objectId: must be a string`);
+  if (!(VALID_OBJECT_TYPES as readonly string[]).includes(value['type'] as string)) {
+    errors.push(
+      `${path}.type: must be one of ${VALID_OBJECT_TYPES.join(', ')}`
+    );
+  }
+  if (!(VALID_OBJECT_STATUSES as readonly string[]).includes(value['status'] as string)) {
+    errors.push(`${path}.status: must be 'placed' | 'confirmed'`);
+  }
+  if (!isArray(value['photoIds'])) {
+    errors.push(`${path}.photoIds: must be an array`);
+  } else {
+    (value['photoIds'] as unknown[]).forEach((id, i) => {
+      if (!isString(id)) errors.push(`${path}.photoIds[${i}]: must be a string`);
+    });
+  }
+  if (!isArray(value['noteMarkerIds'])) {
+    errors.push(`${path}.noteMarkerIds: must be an array`);
+  } else {
+    (value['noteMarkerIds'] as unknown[]).forEach((id, i) => {
+      if (!isString(id)) errors.push(`${path}.noteMarkerIds[${i}]: must be a string`);
+    });
+  }
+  return errors;
+}
+
+function validatePhotoV1(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isString(value['photoId'])) errors.push(`${path}.photoId: must be a string`);
+  if (!isString(value['uri'])) errors.push(`${path}.uri: must be a string`);
+  if (!isString(value['createdAt'])) errors.push(`${path}.createdAt: must be a string`);
+  if (!(VALID_PHOTO_SCOPES as readonly string[]).includes(value['scope'] as string)) {
+    errors.push(`${path}.scope: must be 'session' | 'room' | 'object'`);
+  }
+  return errors;
+}
+
+function validateAudioSegmentV1(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isString(value['segmentId'])) errors.push(`${path}.segmentId: must be a string`);
+  if (!isString(value['uri'])) errors.push(`${path}.uri: must be a string`);
+  if (!isString(value['startedAt'])) errors.push(`${path}.startedAt: must be a string`);
+  if (!isString(value['endedAt'])) errors.push(`${path}.endedAt: must be a string`);
+  return errors;
+}
+
+function validateAudioV1(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (value['mode'] !== 'continuous') {
+    errors.push(`${path}.mode: must be 'continuous'`);
+  }
+  if (!isArray(value['segments'])) {
+    errors.push(`${path}.segments: must be an array`);
+  } else {
+    (value['segments'] as unknown[]).forEach((seg, i) => {
+      errors.push(...validateAudioSegmentV1(seg, `${path}.segments[${i}]`));
+    });
+  }
+  if (isObject(value['transcription'])) {
+    const t = value['transcription'];
+    if (!(VALID_TRANSCRIPTION_STATUSES as readonly string[]).includes(t['status'] as string)) {
+      errors.push(`${path}.transcription.status: must be 'pending' | 'processing' | 'complete'`);
+    }
+  }
+  return errors;
+}
+
+function validateNoteMarkerV1(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isString(value['markerId'])) errors.push(`${path}.markerId: must be a string`);
+  if (!isString(value['createdAt'])) errors.push(`${path}.createdAt: must be a string`);
+  if (
+    value['category'] !== undefined &&
+    !(VALID_NOTE_CATEGORIES as readonly string[]).includes(value['category'] as string)
+  ) {
+    errors.push(
+      `${path}.category: must be one of ${VALID_NOTE_CATEGORIES.join(', ')}`
+    );
+  }
+  return errors;
+}
+
+function validateSessionEventV1(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isString(value['eventId'])) errors.push(`${path}.eventId: must be a string`);
+  if (!(VALID_EVENT_TYPES as readonly string[]).includes(value['type'] as string)) {
+    errors.push(
+      `${path}.type: must be one of ${VALID_EVENT_TYPES.join(', ')}`
+    );
+  }
+  if (!isString(value['timestamp'])) errors.push(`${path}.timestamp: must be a string`);
+  return errors;
+}
+
+function validateSessionCaptureV1Fields(raw: UnknownSessionCapture): string[] {
+  const errors: string[] = [];
+  if (!isString(raw['sessionId'])) errors.push('sessionId: must be a string');
+  if (!isString(raw['startedAt'])) errors.push('startedAt: must be a string');
+  if (!isString(raw['updatedAt'])) errors.push('updatedAt: must be a string');
+  if (!(VALID_SESSION_STATUSES as readonly string[]).includes(raw['status'] as string)) {
+    errors.push("status: must be 'active' | 'review' | 'ready' | 'synced'");
+  }
+
+  if (!isArray(raw['rooms'])) {
+    errors.push('rooms: must be an array');
+  } else {
+    raw['rooms'].forEach((r, i) => {
+      errors.push(...validateRoomV1(r, `rooms[${i}]`));
+    });
+  }
+
+  if (!isArray(raw['objects'])) {
+    errors.push('objects: must be an array');
+  } else {
+    raw['objects'].forEach((o, i) => {
+      errors.push(...validateObjectV1(o, `objects[${i}]`));
+    });
+  }
+
+  if (!isArray(raw['photos'])) {
+    errors.push('photos: must be an array');
+  } else {
+    raw['photos'].forEach((p, i) => {
+      errors.push(...validatePhotoV1(p, `photos[${i}]`));
+    });
+  }
+
+  errors.push(...validateAudioV1(raw['audio'], 'audio'));
+
+  if (!isArray(raw['notes'])) {
+    errors.push('notes: must be an array');
+  } else {
+    raw['notes'].forEach((n, i) => {
+      errors.push(...validateNoteMarkerV1(n, `notes[${i}]`));
+    });
+  }
+
+  if (!isArray(raw['events'])) {
+    errors.push('events: must be an array');
+  } else {
+    raw['events'].forEach((e, i) => {
+      errors.push(...validateSessionEventV1(e, `events[${i}]`));
+    });
+  }
+
+  return errors;
+}
+
+function assertIsSessionCaptureV1(value: unknown): asserts value is SessionCaptureV1 {
+  if (!isObject(value)) {
+    throw new Error('assertIsSessionCaptureV1: expected a non-null object');
+  }
+  const errors = validateSessionCaptureV1Fields(value);
+  if (errors.length > 0) {
+    throw new Error(
+      `assertIsSessionCaptureV1: structural validation failed — ${errors.join('; ')}`
+    );
+  }
+}
+
+/**
+ * validateSessionCapture — entry-point validator for an unknown SessionCaptureV1
+ * payload.
+ *
+ * Returns `{ ok: true, session }` when the payload passes all structural
+ * checks, or `{ ok: false, errors }` with a list of human-readable error
+ * strings.
+ *
+ * Usage:
+ *   const result = validateSessionCapture(rawJson);
+ *   if (!result.ok) {
+ *     // handle result.errors
+ *   }
+ *   // result.session is now typed as SessionCaptureV1
+ */
+export function validateSessionCapture(input: unknown): SessionCaptureValidationResult {
+  if (!isObject(input)) {
+    return { ok: false, errors: ['Session capture must be a non-null JSON object'] };
+  }
+
+  const raw = input as UnknownSessionCapture;
+
+  if (!isString(raw['version'])) {
+    return { ok: false, errors: ['version: must be a string'] };
+  }
+
+  const isSupported = (SUPPORTED_SESSION_CAPTURE_VERSIONS as readonly string[]).includes(
+    raw['version']
+  );
+  if (!isSupported) {
+    return {
+      ok: false,
+      errors: [
+        `version '${raw['version']}' is not supported. ` +
+          `Supported versions: ${SUPPORTED_SESSION_CAPTURE_VERSIONS.join(', ')}`,
+      ],
+    };
+  }
+
+  const structuralErrors = validateSessionCaptureV1Fields(raw);
+  if (structuralErrors.length > 0) {
+    return { ok: false, errors: structuralErrors };
+  }
+
+  assertIsSessionCaptureV1(raw);
+  return { ok: true, session: raw };
 }
