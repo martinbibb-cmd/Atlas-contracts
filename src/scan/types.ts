@@ -350,3 +350,304 @@ export interface VisitCapture {
   scanBundle: ScanBundleV1;
   voiceNotes?: VoiceNote[];
 }
+
+// ─── SessionCaptureV1 ─────────────────────────────────────────────────────────
+//
+// A UI-agnostic, session-based capture contract that represents the structured
+// memory of a house survey.  It describes what was captured — rooms, objects,
+// evidence, and timeline — without encoding any UI concepts.
+//
+// Design principles:
+//   - Session is the root of truth; everything hangs off a session.
+//   - Room provides context, not containment; objects may exist before room
+//     assignment.
+//   - Object is the primary anchor for evidence (photos + notes).
+//   - Audio is captured continuously; markers provide in-session structure.
+//   - Timeline (events) enables replay, debugging, and explainability.
+//
+// This feeds Atlas ingestion, engineer reports, customer portal, and the
+// recommendation engine.
+
+/**
+ * Lifecycle status of a capture session.
+ *
+ * active  — capture is in progress
+ * review  — capture complete; awaiting operator review
+ * ready   — reviewed and ready for Atlas ingestion
+ * synced  — successfully ingested by Atlas
+ */
+export type SessionStatusV1 = 'active' | 'review' | 'ready' | 'synced';
+
+/**
+ * Lifecycle status of a captured room.
+ *
+ * active   — room capture is in progress
+ * complete — room capture is complete
+ */
+export type RoomStatusV1 = 'active' | 'complete';
+
+/**
+ * Type of a captured object (heating / plumbing system components).
+ */
+export type CapturedObjectType =
+  | 'radiator'
+  | 'boiler'
+  | 'cylinder'
+  | 'thermostat'
+  | 'flue'
+  | 'pipe'
+  | 'consumer_unit'
+  | 'other';
+
+/**
+ * Confidence level of a 3D anchor placement.
+ *
+ * Values are expressed as a number in [0, 1] where 1 = highest confidence.
+ */
+export type AnchorConfidence = number;
+
+/**
+ * Placement status of a captured object.
+ *
+ * placed    — object has been placed in the scene (initial position)
+ * confirmed — operator has confirmed the object's position and type
+ */
+export type CapturedObjectStatus = 'placed' | 'confirmed';
+
+/**
+ * Evidence scope for a photo — whether it documents the whole session, a
+ * specific room, or a specific object.
+ */
+export type PhotoScope = 'session' | 'room' | 'object';
+
+/**
+ * Semantic category of a note marker.
+ *
+ * constraint   — installation or access constraint
+ * observation  — general field observation
+ * preference   — captured customer preference or request
+ * risk         — a risk item noted during capture
+ * follow_up    — a follow-up action to be taken after the visit
+ */
+export type NoteMarkerCategory =
+  | 'constraint'
+  | 'observation'
+  | 'preference'
+  | 'risk'
+  | 'follow_up';
+
+/**
+ * Type of a session timeline event.
+ */
+export type SessionEventType =
+  | 'room_assigned'
+  | 'object_added'
+  | 'photo_taken'
+  | 'note_marker_added'
+  | 'room_finished';
+
+/**
+ * RoomV1 — a room captured during a survey session.
+ *
+ * Room provides context (label, status, optional geometry) rather than acting
+ * as a strict container.  Objects may exist before being assigned to a room.
+ *
+ * roomId   — unique identifier for this room (UUID string)
+ * label    — human-readable room label (e.g. "Kitchen", "Boiler Room")
+ * status   — 'active' | 'complete'
+ * geometry — optional spatial data (mesh reference and bounding coordinates)
+ */
+export interface RoomV1 {
+  roomId: string;
+  label: string;
+  status: RoomStatusV1;
+  geometry?: {
+    meshRef?: string;
+    bounds?: number[];
+  };
+}
+
+/**
+ * ObjectV1 — a captured heating / plumbing object that anchors evidence.
+ *
+ * Object is the primary carrier of meaning within a session.  Photos and note
+ * markers should prefer attaching to objects where possible.
+ *
+ * objectId        — unique identifier (UUID string)
+ * type            — the kind of system component captured
+ * roomId          — optional reference to the room the object is in
+ * anchor          — optional 3D placement in scene coordinate space
+ * status          — 'placed' | 'confirmed'
+ * metadata        — optional subtype and free-text notes
+ * photoIds        — IDs of photos attached to this object
+ * noteMarkerIds   — IDs of note markers attached to this object
+ */
+export interface ObjectV1 {
+  objectId: string;
+  type: CapturedObjectType;
+  roomId?: string;
+  anchor?: {
+    position?: [number, number, number];
+    normal?: [number, number, number];
+    confidence?: AnchorConfidence;
+  };
+  status: CapturedObjectStatus;
+  metadata?: {
+    subtype?: string;
+    notes?: string;
+  };
+  photoIds: string[];
+  noteMarkerIds: string[];
+}
+
+/**
+ * PhotoV1 — a photo captured as evidence during the session.
+ *
+ * Photos are evidence-first: they may document the session as a whole, a
+ * specific room, or a specific object.
+ *
+ * photoId   — unique identifier (UUID string)
+ * uri       — local or remote URI of the image asset
+ * createdAt — ISO-8601 timestamp of capture
+ * scope     — 'session' | 'room' | 'object'
+ * roomId    — required when scope is 'room'
+ * objectId  — required when scope is 'object'
+ * tags      — optional semantic tags (e.g. 'data_plate', 'clearance', 'condition')
+ */
+export interface PhotoV1 {
+  photoId: string;
+  uri: string;
+  createdAt: string;
+  scope: PhotoScope;
+  roomId?: string;
+  objectId?: string;
+  tags?: string[];
+}
+
+/**
+ * AudioSegmentV1 — a single segment of continuous audio captured during the session.
+ *
+ * segmentId — unique identifier (UUID string)
+ * uri       — local or remote URI of the audio asset
+ * startedAt — ISO-8601 timestamp of segment start
+ * endedAt   — ISO-8601 timestamp of segment end
+ */
+export interface AudioSegmentV1 {
+  segmentId: string;
+  uri: string;
+  startedAt: string;
+  endedAt: string;
+}
+
+/**
+ * AudioV1 — continuous audio capture data for the session.
+ *
+ * Audio is always captured in 'continuous' mode during a session.  Individual
+ * segments cover the full session timeline and are used for transcription and
+ * marker context.
+ *
+ * mode          — always 'continuous'
+ * segments      — ordered list of audio segments
+ * transcription — optional transcription state and text
+ */
+export interface AudioV1 {
+  mode: 'continuous';
+  segments: AudioSegmentV1[];
+  transcription?: {
+    status: 'pending' | 'processing' | 'complete';
+    text?: string;
+  };
+}
+
+/**
+ * NoteMarkerV1 — a timestamped marker placed during the session to flag a
+ * point of interest in the audio timeline.
+ *
+ * markerId  — unique identifier (UUID string)
+ * createdAt — ISO-8601 timestamp of marker creation
+ * roomId    — optional room context at time of marker
+ * objectId  — optional object context at time of marker
+ * category  — optional semantic category
+ * text      — optional quick label or short note
+ */
+export interface NoteMarkerV1 {
+  markerId: string;
+  createdAt: string;
+  roomId?: string;
+  objectId?: string;
+  category?: NoteMarkerCategory;
+  text?: string;
+}
+
+/**
+ * SessionEventV1 — a single entry in the session timeline event stream.
+ *
+ * The event stream provides full replay capability, debugging, and
+ * explainability for Atlas engineers.
+ *
+ * eventId   — unique identifier (UUID string)
+ * type      — the kind of event that occurred
+ * timestamp — ISO-8601 timestamp of the event
+ * roomId    — room context at time of event (if applicable)
+ * objectId  — object context at time of event (if applicable)
+ */
+export interface SessionEventV1 {
+  eventId: string;
+  type: SessionEventType;
+  timestamp: string;
+  roomId?: string;
+  objectId?: string;
+}
+
+/**
+ * SessionCaptureV1 — the top-level capture contract for a structured house
+ * survey session.
+ *
+ * This is the root of truth for a complete Atlas capture session.  It
+ * describes what was captured (rooms, objects, photos, audio, note markers,
+ * and a timeline of events) without encoding any UI-specific concepts.
+ *
+ * version      — contract version string; always '1.0'
+ * sessionId    — unique identifier for this session (UUID string)
+ * startedAt    — ISO-8601 timestamp of session start
+ * updatedAt    — ISO-8601 timestamp of last update
+ * completedAt  — ISO-8601 timestamp of session completion (absent if active)
+ * status       — current lifecycle status of the session
+ * property     — optional property address information
+ * rooms        — rooms visited during the session
+ * objects      — captured system objects (radiators, boilers, etc.)
+ * photos       — photos taken as evidence
+ * audio        — continuous audio capture data
+ * notes        — timestamped note markers placed during the session
+ * events       — ordered timeline event stream (enables replay / debugging)
+ * device       — optional device and app metadata
+ */
+export interface SessionCaptureV1 {
+  version: '1.0';
+  sessionId: string;
+  startedAt: string;
+  updatedAt: string;
+  completedAt?: string;
+  status: SessionStatusV1;
+  property?: {
+    address?: string;
+    postcode?: string;
+  };
+  rooms: RoomV1[];
+  objects: ObjectV1[];
+  photos: PhotoV1[];
+  audio: AudioV1;
+  notes: NoteMarkerV1[];
+  events: SessionEventV1[];
+  device?: {
+    model?: string;
+    os?: string;
+    appVersion?: string;
+  };
+}
+
+/**
+ * A raw unknown input — used at the validation boundary before the session
+ * capture has been confirmed to match the versioned contract.
+ */
+export type UnknownSessionCapture = Record<string, unknown>;

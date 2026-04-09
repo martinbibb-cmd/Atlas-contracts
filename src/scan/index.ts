@@ -29,10 +29,34 @@ export type {
   VoiceNoteSyncState,
   VoiceNote,
   VisitCapture,
+  SessionStatusV1,
+  RoomStatusV1,
+  CapturedObjectType,
+  AnchorConfidence,
+  CapturedObjectStatus,
+  PhotoScope,
+  NoteMarkerCategory,
+  SessionEventType,
+  RoomV1,
+  ObjectV1,
+  PhotoV1,
+  AudioSegmentV1,
+  AudioV1,
+  NoteMarkerV1,
+  SessionEventV1,
+  SessionCaptureV1,
+  UnknownSessionCapture,
 } from './types';
 
 export { SUPPORTED_SCAN_BUNDLE_VERSIONS, isSupportedVersion, isUnsupportedVersion } from './versions';
 export type { ScanBundleVersion } from './versions';
 
-export { validateScanBundle } from './validation';
-export type { ScanValidationResult, ScanValidationSuccess, ScanValidationFailure } from './validation';
+export { validateScanBundle, validateSessionCapture } from './validation';
+export type {
+  ScanValidationResult,
+  ScanValidationSuccess,
+  ScanValidationFailure,
+  SessionCaptureValidationResult,
+  SessionCaptureValidationSuccess,
+  SessionCaptureValidationFailure,
+} from './validation';
