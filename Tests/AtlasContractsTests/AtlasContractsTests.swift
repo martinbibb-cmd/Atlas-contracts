@@ -348,7 +348,7 @@ final class AtlasContractsTests: XCTestCase {
         XCTAssertEqual(session.audio.mode, "continuous")
         XCTAssertEqual(session.audio.segments.count, 2)
         XCTAssertEqual(session.notes.count, 2)
-        XCTAssertEqual(session.events.count, 5)
+        XCTAssertEqual(session.events.count, 10)
     }
 
     func testSessionCapturePropertyDecodes() throws {
@@ -831,6 +831,37 @@ private let validSessionCaptureJSON = """
       "type": "room_finished",
       "timestamp": "2025-06-01T09:20:00Z",
       "roomId": "room-boilerroom-01"
+    },
+    {
+      "eventId": "evt-006",
+      "type": "room_assigned",
+      "timestamp": "2025-06-01T09:21:00Z",
+      "roomId": "room-kitchen-01"
+    },
+    {
+      "eventId": "evt-007",
+      "type": "object_added",
+      "timestamp": "2025-06-01T09:25:00Z",
+      "objectId": "obj-radiator-01",
+      "roomId": "room-kitchen-01"
+    },
+    {
+      "eventId": "evt-008",
+      "type": "photo_taken",
+      "timestamp": "2025-06-01T09:30:00Z",
+      "roomId": "room-kitchen-01"
+    },
+    {
+      "eventId": "evt-009",
+      "type": "note_marker_added",
+      "timestamp": "2025-06-01T09:32:00Z",
+      "roomId": "room-kitchen-01"
+    },
+    {
+      "eventId": "evt-010",
+      "type": "room_finished",
+      "timestamp": "2025-06-01T09:44:00Z",
+      "roomId": "room-kitchen-01"
     }
   ],
   "device": {
