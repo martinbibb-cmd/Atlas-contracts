@@ -3,12 +3,20 @@
   "version": "1.0.0",
   "description": "Shared scan-bundle contract definitions for Atlas and future scan clients",
   "type": "module",
-  "main": "./dist/scan/index.js",
-  "types": "./dist/scan/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./scan": {
       "import": "./dist/scan/index.js",
       "types": "./dist/scan/index.d.ts"
+    },
+    "./atlasProperty": {
+      "import": "./dist/atlasProperty/index.js",
+      "types": "./dist/atlasProperty/index.d.ts"
     }
   },
   "scripts": {
