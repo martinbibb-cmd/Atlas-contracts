@@ -258,18 +258,28 @@ public struct EvidenceModelV1: Codable, Sendable, Equatable {
     public let textNotes: [TextNoteEvidenceV1]
     public let qaFlags: [QAFlagV1]
     public let events: [TimelineEventV1]
+    /// Internal room scan evidence captured using RoomPlan / LiDAR.
+    /// Optional; absent if no indoor 3D scan has been performed for this property.
+    public let spatialEvidence3d: [SpatialEvidence3D]?
+    /// External flue-clearance scenes captured outside the property.
+    /// Optional; absent if no outdoor clearance scan has been performed.
+    public let externalClearanceScenes: [ExternalClearanceSceneV1]?
 
     public init(
         photos: [PhotoEvidenceV1] = [],
         voiceNotes: [VoiceNoteEvidenceV1] = [],
         textNotes: [TextNoteEvidenceV1] = [],
         qaFlags: [QAFlagV1] = [],
-        events: [TimelineEventV1] = []
+        events: [TimelineEventV1] = [],
+        spatialEvidence3d: [SpatialEvidence3D]? = nil,
+        externalClearanceScenes: [ExternalClearanceSceneV1]? = nil
     ) {
         self.photos = photos
         self.voiceNotes = voiceNotes
         self.textNotes = textNotes
         self.qaFlags = qaFlags
         self.events = events
+        self.spatialEvidence3d = spatialEvidence3d
+        self.externalClearanceScenes = externalClearanceScenes
     }
 }
