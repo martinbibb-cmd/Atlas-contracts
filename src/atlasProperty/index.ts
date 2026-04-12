@@ -65,6 +65,9 @@ export type {
   TextNoteEvidenceV1,
   QAFlagV1,
   TimelineEventV1,
+  Vec3,
+  SpatialEvidence3D,
+  ExternalClearanceSceneV1,
   EvidenceModelV1,
 } from './evidence.types';
 

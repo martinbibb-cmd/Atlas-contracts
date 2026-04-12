@@ -179,6 +179,159 @@ export interface TimelineEventV1 {
   payload?: Record<string, unknown>;
 }
 
+// ─── Vec3 ─────────────────────────────────────────────────────────────────────
+
+/**
+ * A 3-D vector / point in metres, used for spatial evidence positioning.
+ *
+ * x, y — horizontal plane.
+ * z    — vertical (elevation) in metres.
+ */
+export interface Vec3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
+// ─── SpatialEvidence3D ────────────────────────────────────────────────────────
+
+/**
+ * SpatialEvidence3D — an internal room scan captured as walkthrough evidence.
+ *
+ * Produced by RoomPlan / LiDAR-based indoor capture.  Stores the scan asset
+ * and metadata only; no derived calculations or mutations to the building model
+ * should flow from this type.
+ *
+ * Rules:
+ *   - No derived maths from this asset
+ *   - No direct mutation of AtlasRoomV1 from the scan model
+ *   - File stored externally; only metadata lives in the canonical JSON
+ *   - Visible in engineer and portal surfaces as evidence only
+ */
+export interface SpatialEvidence3D {
+  /** Unique identifier (UUID string). */
+  id: string;
+  /** ID of the property this scan belongs to. */
+  propertyId: string;
+  /** ID of the capture session that produced this scan. */
+  sourceSessionId: string;
+  /** Discriminant — always 'internal_room_scan' for this type. */
+  kind: 'internal_room_scan';
+  /** File format of the 3D asset. */
+  format: 'usdz' | 'glb' | 'realitykit';
+  /** Remote URL of the 3D asset file. */
+  fileUrl: string;
+  /** Remote URL of a preview image (thumbnail) for the scan. */
+  previewImageUrl?: string;
+  /** IDs of the building-model rooms this scan is linked to. */
+  linkedRoomIds?: string[];
+  /** IDs of the thermal zones this scan is linked to. */
+  linkedZoneIds?: string[];
+  /** Approximate spatial extents of the captured area in metres. */
+  bounds?: {
+    width: number;
+    length: number;
+    height: number;
+  };
+  /** Capture device and session metadata. */
+  captureMeta?: {
+    /** Hardware identifier of the capture device (e.g. 'iPhone 15 Pro'). */
+    device: string;
+    /** ISO-8601 timestamp of capture. */
+    timestamp: string;
+    /** Capture confidence score in [0, 1]. */
+    confidence?: number;
+  };
+}
+
+// ─── ExternalClearanceSceneV1 ─────────────────────────────────────────────────
+
+/**
+ * ExternalClearanceSceneV1 — an outdoor flue-clearance compliance scene.
+ *
+ * Captured outside the property to tag the flue terminal, nearby openings,
+ * and other features that affect flue-clearance compliance.  Compliance
+ * logic runs from the structured measurements and tagged features, not from
+ * raw point-cloud geometry.
+ *
+ * Rules:
+ *   - Compliance logic must use structured measurements / tagged features only
+ *   - Point cloud / mesh are optional evidence assets
+ *   - No raw point-cloud parsing in report rendering
+ *   - No large binary blobs inlined into the JSON payload
+ */
+export interface ExternalClearanceSceneV1 {
+  /** Unique identifier (UUID string). */
+  id: string;
+  /** ID of the property this scene belongs to. */
+  propertyId: string;
+  /** ID of the capture session that produced this scene. */
+  sourceSessionId: string;
+  /** Discriminant — always 'external_flue_clearance' for this type. */
+  kind: 'external_flue_clearance';
+  /** Optional remote evidence assets (preview, mesh, point cloud). */
+  evidence: {
+    /** Remote URL of a preview image for the scene. */
+    previewImageUrl?: string;
+    /** Remote URL of a 3D mesh / scene model. */
+    modelUrl?: string;
+    /** Remote URL of a raw point-cloud asset (evidence only). */
+    pointCloudUrl?: string;
+  };
+  /** Spatial description of the flue terminal location. */
+  flueTerminal?: {
+    /** Terminal position in scene coordinate space. */
+    position3D?: Vec3;
+    /** Outward normal vector of the terminal face. */
+    normal?: Vec3;
+    /** Height of the terminal above ground level in metres. */
+    heightAboveGroundM?: number;
+  };
+  /** Nearby features tagged during the outdoor capture. */
+  nearbyFeatures: Array<{
+    /** Unique identifier for this feature (UUID string). */
+    id: string;
+    /** Classification of the nearby feature. */
+    type:
+      | 'window'
+      | 'door'
+      | 'air_brick'
+      | 'boundary'
+      | 'eaves'
+      | 'gutter'
+      | 'soil_stack'
+      | 'opening'
+      | 'adjacent_flue'
+      | 'balcony';
+    /** Position of the feature in scene coordinate space. */
+    position3D?: Vec3;
+    /** Measured or derived distance from the terminal to this feature in metres. */
+    distanceToTerminalM?: number;
+    /** Free-text notes about this feature. */
+    notes?: string;
+  }>;
+  /** Structured measurements between the terminal and tagged features. */
+  measurements: Array<{
+    /** Unique identifier for this measurement (UUID string). */
+    id: string;
+    /** What is being measured. */
+    kind: 'terminal_to_opening' | 'terminal_to_boundary' | 'terminal_to_eaves';
+    /** Measurement value in metres. */
+    valueM: number;
+    /** Whether the value was directly measured or computationally derived. */
+    source: 'measured' | 'derived';
+  }>;
+  /** Compliance outcome derived from the structured measurements. */
+  compliance?: {
+    /** Reference to the gas-safety / building standard applied (e.g. 'BS 5440-1'). */
+    standardRef?: string;
+    /** Human-readable compliance warnings. */
+    warnings?: string[];
+    /** Overall pass/fail outcome. */
+    pass?: boolean;
+  };
+}
+
 // ─── EvidenceModelV1 ─────────────────────────────────────────────────────────
 
 /**
@@ -199,4 +352,14 @@ export interface EvidenceModelV1 {
   qaFlags: QAFlagV1[];
   /** Ordered survey timeline events. */
   events: TimelineEventV1[];
+  /**
+   * Internal room scan evidence captured using RoomPlan / LiDAR.
+   * Optional; absent if no indoor 3D scan has been performed for this property.
+   */
+  spatialEvidence3d?: SpatialEvidence3D[];
+  /**
+   * External flue-clearance scenes captured outside the property.
+   * Optional; absent if no outdoor clearance scan has been performed.
+   */
+  externalClearanceScenes?: ExternalClearanceSceneV1[];
 }
