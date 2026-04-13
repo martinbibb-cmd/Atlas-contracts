@@ -14,6 +14,8 @@
  *   8. sourceApps array carries expected app identifiers
  *   9. PropertyIdentityV1 partial fields are valid
  *  10. CaptureContextV1 optional operator and device fields are valid
+ *  11. Watts / Kilowatts unit wrappers convert correctly
+ *  12. WhyNotReasonV1 attaches to RecommendationItemSummaryV1
  */
 
 import { describe, it, expect } from 'vitest';
@@ -28,7 +30,15 @@ import type {
   CaptureContextV1,
   AtlasPropertyStatus,
   AtlasSourceApp,
+  RecommendationItemSummaryV1,
+  WhyNotReasonV1,
 } from '../../src/atlasProperty/index';
+import {
+  toWatts,
+  toKilowatts,
+  wattsToKilowatts,
+  kilowattsToWatts,
+} from '../../src/atlasProperty/units';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -314,5 +324,84 @@ describe('CaptureContextV1', () => {
     expect(ctx.operator?.engineerName).toBe('Alice Smith');
     expect(ctx.device?.app).toBe('atlas_scan');
     expect(ctx.walkthrough?.completed).toBe(true);
+  });
+});
+
+
+// ─── 11. Watts / Kilowatts unit wrappers ─────────────────────────────────────
+
+describe('Watts and Kilowatts unit wrappers', () => {
+  it('toWatts creates a Watts-tagged value', () => {
+    const w = toWatts(4500);
+    expect(w).toBe(4500);
+  });
+
+  it('toKilowatts creates a Kilowatts-tagged value', () => {
+    const kw = toKilowatts(4.5);
+    expect(kw).toBe(4.5);
+  });
+
+  it('wattsToKilowatts divides by 1000', () => {
+    const w = toWatts(4500);
+    const kw = wattsToKilowatts(w);
+    expect(kw).toBe(4.5);
+  });
+
+  it('kilowattsToWatts multiplies by 1000', () => {
+    const kw = toKilowatts(4.5);
+    const w = kilowattsToWatts(kw);
+    expect(w).toBe(4500);
+  });
+
+  it('round-trips Watts → Kilowatts → Watts without loss', () => {
+    const original = toWatts(12345);
+    const back = kilowattsToWatts(wattsToKilowatts(original));
+    expect(back).toBeCloseTo(12345, 6);
+  });
+
+  it('round-trips Kilowatts → Watts → Kilowatts without loss', () => {
+    const original = toKilowatts(12.345);
+    const back = wattsToKilowatts(kilowattsToWatts(original));
+    expect(back).toBeCloseTo(12.345, 6);
+  });
+});
+
+// ─── 12. WhyNotReasonV1 on RecommendationItemSummaryV1 ───────────────────────
+
+describe('WhyNotReasonV1 on RecommendationItemSummaryV1', () => {
+  it('accepts a rejected item with whyNotReasons', () => {
+    const reason: WhyNotReasonV1 = {
+      code: 'hydraulic_capacity_insufficient',
+      explanation: 'The existing pipe network cannot deliver the required flow rate.',
+      educationalExplainerRef: 'explainer:pipe-capacity',
+    };
+    const item: RecommendationItemSummaryV1 = {
+      itemId: 'item-001',
+      category: 'air_source_heat_pump',
+      label: 'Air Source Heat Pump',
+      status: 'rejected',
+      whyNotReasons: [reason],
+    };
+    expect(item.whyNotReasons).toHaveLength(1);
+    expect(item.whyNotReasons![0].code).toBe('hydraulic_capacity_insufficient');
+    expect(item.whyNotReasons![0].educationalExplainerRef).toBe('explainer:pipe-capacity');
+  });
+
+  it('accepts an accepted item without whyNotReasons', () => {
+    const item: RecommendationItemSummaryV1 = {
+      itemId: 'item-002',
+      category: 'replacement_boiler',
+      label: 'Replacement Boiler',
+      status: 'accepted',
+    };
+    expect(item.whyNotReasons).toBeUndefined();
+  });
+
+  it('accepts a WhyNotReasonV1 without educationalExplainerRef', () => {
+    const reason: WhyNotReasonV1 = {
+      code: 'flue_clearance_violation',
+      explanation: 'The proposed flue location violates BS 6798 clearance requirements.',
+    };
+    expect(reason.educationalExplainerRef).toBeUndefined();
   });
 });

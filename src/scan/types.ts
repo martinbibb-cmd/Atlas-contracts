@@ -331,6 +331,19 @@ export interface VoiceNote {
   transcriptStatus: TranscriptStatus;
   /** Current upload / remote sync state. */
   syncState: VoiceNoteSyncState;
+  /**
+   * Verbatim snippet from the transcript that triggered a fact extraction.
+   *
+   * When the SessionKnowledgeExtractor derives a structured fact from this
+   * voice note (e.g. household composition, boiler age), this field carries
+   * the exact transcript segment responsible for that extraction.  Displaying
+   * this snippet to the user ("You mentioned 'three kids'…") lets them verify
+   * and, if needed, correct the extracted fact immediately.
+   *
+   * Absent when no fact has been extracted, or when the triggering snippet
+   * cannot be isolated.
+   */
+  triggerSnippet?: string;
 }
 
 // ─── Visit capture ────────────────────────────────────────────────────────────
@@ -651,3 +664,80 @@ export interface SessionCaptureV1 {
  * capture has been confirmed to match the versioned contract.
  */
 export type UnknownSessionCapture = Record<string, unknown>;
+
+// ─── Scan import conflict types ───────────────────────────────────────────────
+//
+// When a LiDAR scan bundle is imported into a property record that already
+// has manually-entered field values, discrepancies between the two may arise
+// (e.g. the engineer measured a room as 12 m² but the scan reads 14.2 m²).
+//
+// These types represent the structured output of the conflict-detection step
+// in the scan import pipeline.  A Conflict Resolution UI can present each
+// ScanImportConflictItemV1 to the user as a side-by-side choice rather than
+// silently overwriting the existing value.
+
+/**
+ * The kind of value discrepancy detected during scan import.
+ *
+ * area_mismatch    — floor area differs between manual entry and scan
+ * height_mismatch  — ceiling height differs
+ * opening_mismatch — an opening (door/window) count or dimension differs
+ * other            — any other field-level discrepancy
+ */
+export type ScanImportConflictKind =
+  | 'area_mismatch'
+  | 'height_mismatch'
+  | 'opening_mismatch'
+  | 'other';
+
+/**
+ * The two competing values for a single conflicting field.
+ *
+ * fieldPath   — dot-notation path to the conflicting field
+ *               (e.g. "building.rooms[2].areaM2")
+ * manualValue — the value already stored in the property record
+ * scanValue   — the value detected by the LiDAR scan
+ * unit        — optional SI unit label (e.g. 'm²', 'm')
+ */
+export interface ScanImportConflictFieldV1 {
+  fieldPath: string;
+  manualValue: unknown;
+  scanValue: unknown;
+  unit?: string;
+}
+
+/**
+ * A single detected conflict between manual data and an incoming scan.
+ *
+ * conflictId  — unique identifier for this conflict item (UUID string)
+ * kind        — category of the discrepancy
+ * roomId      — the room affected, if the conflict is room-scoped
+ * field       — the specific field that differs and its two values
+ * detectedAt  — ISO-8601 timestamp of when the conflict was detected
+ */
+export interface ScanImportConflictItemV1 {
+  conflictId: string;
+  kind: ScanImportConflictKind;
+  roomId?: string;
+  field: ScanImportConflictFieldV1;
+  detectedAt: string;
+}
+
+/**
+ * The full set of conflicts produced by a single scan import operation.
+ *
+ * A non-empty `conflicts` array indicates that the Conflict Resolution UI
+ * should be shown before applying the scan data to the property record.
+ *
+ * bundleId    — ID of the incoming ScanBundleV1 that triggered conflicts
+ * propertyId  — ID of the AtlasPropertyV1 being updated
+ * conflicts   — ordered list of detected conflicts (empty ⟹ no conflicts)
+ * generatedAt — ISO-8601 timestamp of when this conflict set was produced
+ */
+export interface ScanImportConflictSetV1 {
+  bundleId: string;
+  propertyId: string;
+  conflicts: ScanImportConflictItemV1[];
+  generatedAt: string;
+}
+

@@ -18,7 +18,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validateScanBundle } from '../../src/scan/validation';
+import { validateScanBundle, checkAtlasPropertyVersion, CURRENT_ATLAS_PROPERTY_VERSION } from '../../src/scan/validation';
 import { isSupportedVersion, isUnsupportedVersion, SUPPORTED_SCAN_BUNDLE_VERSIONS } from '../../src/scan/versions';
 import type { ScanBundleV1 } from '../../src/scan/types';
 
@@ -272,5 +272,50 @@ describe('isSupportedVersion', () => {
 
   it('SUPPORTED_SCAN_BUNDLE_VERSIONS contains "1.0"', () => {
     expect(SUPPORTED_SCAN_BUNDLE_VERSIONS).toContain('1.0');
+  });
+});
+
+// ─── 12. checkAtlasPropertyVersion ───────────────────────────────────────────
+
+describe('checkAtlasPropertyVersion', () => {
+  it('returns current for a record at the current version', () => {
+    const result = checkAtlasPropertyVersion({ version: CURRENT_ATLAS_PROPERTY_VERSION });
+    expect(result.status).toBe('current');
+    expect(result.inputVersion).toBe(CURRENT_ATLAS_PROPERTY_VERSION);
+    expect(result.warning).toBeUndefined();
+  });
+
+  it('returns unknown for a non-object input', () => {
+    const result = checkAtlasPropertyVersion('not-an-object');
+    expect(result.status).toBe('unknown');
+    expect(result.warning).toBeDefined();
+  });
+
+  it('returns unknown for null input', () => {
+    const result = checkAtlasPropertyVersion(null);
+    expect(result.status).toBe('unknown');
+  });
+
+  it('returns unknown when version field is missing', () => {
+    const result = checkAtlasPropertyVersion({ propertyId: 'abc' });
+    expect(result.status).toBe('unknown');
+    expect(result.warning).toContain('missing');
+  });
+
+  it('returns unknown when version field is empty string', () => {
+    const result = checkAtlasPropertyVersion({ version: '' });
+    expect(result.status).toBe('unknown');
+  });
+
+  it('returns unknown for an unrecognised future version', () => {
+    const result = checkAtlasPropertyVersion({ version: '99.0' });
+    expect(result.status).toBe('unknown');
+    expect(result.inputVersion).toBe('99.0');
+    expect(result.warning).toBeDefined();
+  });
+
+  it('CURRENT_ATLAS_PROPERTY_VERSION is a non-empty string', () => {
+    expect(typeof CURRENT_ATLAS_PROPERTY_VERSION).toBe('string');
+    expect(CURRENT_ATLAS_PROPERTY_VERSION.length).toBeGreaterThan(0);
   });
 });

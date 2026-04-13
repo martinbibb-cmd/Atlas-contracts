@@ -15,6 +15,35 @@
  * Only high-level summary fields and cross-app identifiers live here.
  */
 
+// ─── Why-not reason ───────────────────────────────────────────────────────────
+
+/**
+ * A structured explanation for why a system or measure was not recommended,
+ * or was given a cautionary status.
+ *
+ * Linking each reason to an `educationalExplainerRef` allows the UI to surface
+ * a deep link to the relevant explainer article in the Educational Library
+ * (e.g. "Pipe Capacity" for a hydraulic failure), giving customers and
+ * engineers actionable context rather than a bare rejection code.
+ */
+export interface WhyNotReasonV1 {
+  /**
+   * Machine-readable reason code (e.g. 'hydraulic_capacity_insufficient',
+   * 'flue_clearance_violation', 'budget_exceeded').
+   */
+  code: string;
+  /**
+   * Human-readable plain-English explanation of the reason.
+   * Should be concise enough to display in a summary card.
+   */
+  explanation: string;
+  /**
+   * Reference ID for the Educational Explainer article that provides
+   * deeper context for this reason.  Absent if no explainer is available.
+   */
+  educationalExplainerRef?: string;
+}
+
 // ─── Recommendation item summary ─────────────────────────────────────────────
 
 /**
@@ -68,6 +97,15 @@ export interface RecommendationItemSummaryV1 {
     | 'accepted'
     | 'rejected'
     | 'superseded';
+  /**
+   * Structured reasons why this measure was rejected or flagged with caution.
+   *
+   * Populated when `status` is `'rejected'` or the measure carries a cautionary
+   * flag.  Each entry links the reason code to a plain-English explanation and,
+   * where available, to an Educational Explainer article for deeper context.
+   * Absent for accepted or draft items.
+   */
+  whyNotReasons?: WhyNotReasonV1[];
 }
 
 // ─── RecommendationWorkspaceV1 ───────────────────────────────────────────────

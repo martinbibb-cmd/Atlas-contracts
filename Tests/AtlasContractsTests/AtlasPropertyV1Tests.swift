@@ -444,3 +444,252 @@ final class AtlasPropertyV1Tests: XCTestCase {
         XCTAssertNil(rt.recommendations)
     }
 }
+
+// MARK: - Units tests
+
+final class UnitsTests: XCTestCase {
+
+    private let encoder = JSONEncoder()
+    private let decoder = JSONDecoder()
+
+    func testWattsRoundTrips() throws {
+        let w = Watts(4500)
+        let data = try encoder.encode(w)
+        let decoded = try decoder.decode(Watts.self, from: data)
+        XCTAssertEqual(decoded, w)
+    }
+
+    func testKilowattsRoundTrips() throws {
+        let kw = Kilowatts(4.5)
+        let data = try encoder.encode(kw)
+        let decoded = try decoder.decode(Kilowatts.self, from: data)
+        XCTAssertEqual(decoded, kw)
+    }
+
+    func testWattsToKilowatts() {
+        let w = Watts(4500)
+        let kw = w.asKilowatts
+        XCTAssertEqual(kw.value, 4.5, accuracy: 1e-9)
+    }
+
+    func testKilowattsToWatts() {
+        let kw = Kilowatts(4.5)
+        let w = kw.asWatts
+        XCTAssertEqual(w.value, 4500, accuracy: 1e-9)
+    }
+
+    func testWattsRoundTripThroughKilowatts() {
+        let original = Watts(12345)
+        let back = original.asKilowatts.asWatts
+        XCTAssertEqual(back.value, original.value, accuracy: 1e-6)
+    }
+
+    func testWattsEncodesAsPlainNumber() throws {
+        let w = Watts(1000)
+        let data = try encoder.encode(w)
+        let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+        XCTAssertEqual(json as? Double, 1000)
+    }
+
+    func testKilowattsEncodesAsPlainNumber() throws {
+        let kw = Kilowatts(3.5)
+        let data = try encoder.encode(kw)
+        let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+        XCTAssertEqual(json as? Double, 3.5)
+    }
+}
+
+// MARK: - WhyNotReasonV1 tests
+
+final class WhyNotReasonV1Tests: XCTestCase {
+
+    private let encoder: JSONEncoder = {
+        let e = JSONEncoder()
+        e.outputFormatting = .sortedKeys
+        return e
+    }()
+    private let decoder = JSONDecoder()
+
+    private func roundTrip<T: Codable & Equatable>(_ value: T) throws -> T {
+        let data = try encoder.encode(value)
+        return try decoder.decode(T.self, from: data)
+    }
+
+    func testWhyNotReasonRoundTrips() throws {
+        let reason = WhyNotReasonV1(
+            code: "hydraulic_capacity_insufficient",
+            explanation: "The existing pipe network cannot deliver the required flow rate.",
+            educationalExplainerRef: "explainer:pipe-capacity"
+        )
+        let rt = try roundTrip(reason)
+        XCTAssertEqual(rt, reason)
+        XCTAssertEqual(rt.code, "hydraulic_capacity_insufficient")
+        XCTAssertEqual(rt.educationalExplainerRef, "explainer:pipe-capacity")
+    }
+
+    func testWhyNotReasonWithoutExplainerRefRoundTrips() throws {
+        let reason = WhyNotReasonV1(
+            code: "flue_clearance_violation",
+            explanation: "Proposed flue location violates BS 6798 clearance."
+        )
+        let rt = try roundTrip(reason)
+        XCTAssertNil(rt.educationalExplainerRef)
+    }
+
+    func testRecommendationItemWithWhyNotReasonsRoundTrips() throws {
+        let item = RecommendationItemSummaryV1(
+            itemId: "item-001",
+            category: .airSourceHeatPump,
+            label: "Air Source Heat Pump",
+            status: .rejected,
+            whyNotReasons: [
+                WhyNotReasonV1(
+                    code: "hydraulic_capacity_insufficient",
+                    explanation: "Pipe network undersized.",
+                    educationalExplainerRef: "explainer:pipe-capacity"
+                )
+            ]
+        )
+        let rt = try roundTrip(item)
+        XCTAssertEqual(rt, item)
+        XCTAssertEqual(rt.whyNotReasons?.count, 1)
+        XCTAssertEqual(rt.whyNotReasons?.first?.code, "hydraulic_capacity_insufficient")
+    }
+
+    func testRecommendationItemWithoutWhyNotReasonsRoundTrips() throws {
+        let item = RecommendationItemSummaryV1(
+            itemId: "item-002",
+            category: .replacementBoiler,
+            label: "Replacement Boiler",
+            status: .accepted
+        )
+        let rt = try roundTrip(item)
+        XCTAssertNil(rt.whyNotReasons)
+    }
+}
+
+// MARK: - VoiceNote triggerSnippet tests
+
+final class VoiceNoteTriggerSnippetTests: XCTestCase {
+
+    private let encoder = JSONEncoder()
+    private let decoder = JSONDecoder()
+
+    func testVoiceNoteWithTriggerSnippetRoundTrips() throws {
+        let note = VoiceNote(
+            id: UUID(uuidString: "A1B2C3D4-E5F6-7890-ABCD-EF1234567890")!,
+            createdAt: "2025-06-01T10:00:00Z",
+            duration: 15.0,
+            kind: .customerPreference,
+            transcript: "We have three kids so hot water is really important.",
+            transcriptStatus: .complete,
+            triggerSnippet: "three kids"
+        )
+        let data = try encoder.encode(note)
+        let decoded = try decoder.decode(VoiceNote.self, from: data)
+        XCTAssertEqual(decoded.triggerSnippet, "three kids")
+    }
+
+    func testVoiceNoteWithoutTriggerSnippetDecodesLegacyPayload() throws {
+        let json = """
+        {
+          "id": "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+          "createdAt": "2025-06-01T10:00:00Z",
+          "duration": 15.0,
+          "kind": "observation",
+          "transcriptStatus": "notRequested",
+          "syncState": "localOnly"
+        }
+        """
+        let data = json.data(using: .utf8)!
+        let decoded = try decoder.decode(VoiceNote.self, from: data)
+        XCTAssertNil(decoded.triggerSnippet)
+    }
+}
+
+// MARK: - ScanImportConflict tests
+
+final class ScanImportConflictTests: XCTestCase {
+
+    private let encoder: JSONEncoder = {
+        let e = JSONEncoder()
+        e.outputFormatting = .sortedKeys
+        return e
+    }()
+    private let decoder = JSONDecoder()
+
+    private func roundTrip<T: Codable & Equatable>(_ value: T) throws -> T {
+        let data = try encoder.encode(value)
+        return try decoder.decode(T.self, from: data)
+    }
+
+    func testEmptyConflictSetRoundTrips() throws {
+        let set = ScanImportConflictSetV1(
+            bundleId: "bundle-001",
+            propertyId: "prop-001",
+            generatedAt: "2025-06-01T10:00:00Z"
+        )
+        let rt = try roundTrip(set)
+        XCTAssertEqual(rt, set)
+        XCTAssertTrue(rt.conflicts.isEmpty)
+    }
+
+    func testConflictItemRoundTrips() throws {
+        let item = ScanImportConflictItemV1(
+            conflictId: "conflict-001",
+            kind: .areaMismatch,
+            roomId: "room-kitchen-01",
+            field: ScanImportConflictFieldV1(
+                fieldPath: "building.rooms[0].areaM2",
+                manualValue: .double(12.5),
+                scanValue: .double(14.2),
+                unit: "m²"
+            ),
+            detectedAt: "2025-06-01T10:00:00Z"
+        )
+        let rt = try roundTrip(item)
+        XCTAssertEqual(rt, item)
+        XCTAssertEqual(rt.kind, .areaMismatch)
+        XCTAssertEqual(rt.roomId, "room-kitchen-01")
+        XCTAssertEqual(rt.field.unit, "m²")
+    }
+
+    func testConflictSetWithItemsRoundTrips() throws {
+        let set = ScanImportConflictSetV1(
+            bundleId: "bundle-002",
+            propertyId: "prop-002",
+            conflicts: [
+                ScanImportConflictItemV1(
+                    conflictId: "c-001",
+                    kind: .heightMismatch,
+                    field: ScanImportConflictFieldV1(
+                        fieldPath: "building.rooms[1].heightM",
+                        manualValue: .double(2.4),
+                        scanValue: .double(2.6),
+                        unit: "m"
+                    ),
+                    detectedAt: "2025-06-01T11:00:00Z"
+                )
+            ],
+            generatedAt: "2025-06-01T11:00:00Z"
+        )
+        let rt = try roundTrip(set)
+        XCTAssertEqual(rt.conflicts.count, 1)
+        XCTAssertEqual(rt.conflicts.first?.kind, .heightMismatch)
+    }
+
+    func testJSONValueVariantsRoundTrip() throws {
+        let values: [JSONValue] = [
+            .string("hello"),
+            .double(3.14),
+            .int(42),
+            .bool(true),
+            .null,
+        ]
+        for v in values {
+            let data = try encoder.encode(v)
+            let decoded = try decoder.decode(JSONValue.self, from: data)
+            XCTAssertEqual(decoded, v)
+        }
+    }
+}

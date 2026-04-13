@@ -55,6 +55,10 @@ export type {
   SessionEventV1,
   SessionCaptureV1,
   UnknownSessionCapture,
+  ScanImportConflictKind,
+  ScanImportConflictFieldV1,
+  ScanImportConflictItemV1,
+  ScanImportConflictSetV1,
 } from './scan/types';
 
 export {
@@ -64,7 +68,7 @@ export {
 } from './scan/versions';
 export type { ScanBundleVersion } from './scan/versions';
 
-export { validateScanBundle, validateSessionCapture } from './scan/validation';
+export { validateScanBundle, validateSessionCapture, checkAtlasPropertyVersion, CURRENT_ATLAS_PROPERTY_VERSION } from './scan/validation';
 export type {
   ScanValidationResult,
   ScanValidationSuccess,
@@ -72,6 +76,8 @@ export type {
   SessionCaptureValidationResult,
   SessionCaptureValidationSuccess,
   SessionCaptureValidationFailure,
+  AtlasPropertyVersionStatus,
+  AtlasPropertyVersionCheckResult,
 } from './scan/validation';
 
 // ─── AtlasProperty module ─────────────────────────────────────────────────────

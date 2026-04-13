@@ -525,3 +525,109 @@ export function validateSessionCapture(input: unknown): SessionCaptureValidation
   assertIsSessionCaptureV1(raw);
   return { ok: true, session: raw };
 }
+
+// ─── AtlasPropertyV1 version check ───────────────────────────────────────────
+
+/**
+ * The current canonical version of the AtlasPropertyV1 contract.
+ *
+ * Consumers that persist AtlasPropertyV1 records should compare the stored
+ * record's `version` field against this constant to detect stale data before
+ * passing it to the recommendation engine.
+ */
+export const CURRENT_ATLAS_PROPERTY_VERSION = '1.0' as const;
+
+/**
+ * Result of checking an AtlasPropertyV1 version string.
+ *
+ * current — the model is at the current contract version
+ * stale   — the model's version is older than CURRENT_ATLAS_PROPERTY_VERSION
+ * unknown — the model's version is not a recognised Atlas property version,
+ *           or the version field is missing
+ */
+export type AtlasPropertyVersionStatus = 'current' | 'stale' | 'unknown';
+
+export interface AtlasPropertyVersionCheckResult {
+  status: AtlasPropertyVersionStatus;
+  /**
+   * The version string found in the input, if present.
+   * Absent when the input did not contain a recognisable version field.
+   */
+  inputVersion?: string;
+  /**
+   * Human-readable warning message.  Present only when `status` is not
+   * `'current'`.
+   */
+  warning?: string;
+}
+
+/**
+ * Supported AtlasPropertyV1 version strings in ascending order.
+ * Add new versions here when the contract advances.
+ */
+const KNOWN_ATLAS_PROPERTY_VERSIONS = ['1.0'] as const;
+
+/**
+ * checkAtlasPropertyVersion — inspects the `version` field of an unknown
+ * input object and returns a structured status result.
+ *
+ * Call this at the ingestion boundary before passing a persisted
+ * AtlasPropertyV1 record to the recommendation engine.  A `stale` result
+ * should be surfaced as a warning in development builds and logged in
+ * production so that data-migration work can be tracked.
+ *
+ * Usage:
+ *   const check = checkAtlasPropertyVersion(stored);
+ *   if (check.status === 'stale') {
+ *     console.warn(check.warning);
+ *   }
+ */
+export function checkAtlasPropertyVersion(
+  input: unknown
+): AtlasPropertyVersionCheckResult {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) {
+    return {
+      status: 'unknown',
+      warning: 'Input is not an object; cannot determine AtlasPropertyV1 version.',
+    };
+  }
+
+  const record = input as Record<string, unknown>;
+  const version = record['version'];
+
+  if (typeof version !== 'string' || version.length === 0) {
+    return {
+      status: 'unknown',
+      warning:
+        'AtlasPropertyV1 record is missing a version field. ' +
+        `Expected '${CURRENT_ATLAS_PROPERTY_VERSION}'.`,
+    };
+  }
+
+  if (version === CURRENT_ATLAS_PROPERTY_VERSION) {
+    return { status: 'current', inputVersion: version };
+  }
+
+  const isKnown = (KNOWN_ATLAS_PROPERTY_VERSIONS as readonly string[]).includes(version);
+  if (isKnown) {
+    // Known but older version — the record predates the current contract.
+    return {
+      status: 'stale',
+      inputVersion: version,
+      warning:
+        `AtlasPropertyV1 record has version '${version}', which is older than ` +
+        `the current contract version '${CURRENT_ATLAS_PROPERTY_VERSION}'. ` +
+        'Consider migrating this record before passing it to the recommendation engine.',
+    };
+  }
+
+  // Not a known version at all — future or unrecognised.
+  return {
+    status: 'unknown',
+    inputVersion: version,
+    warning:
+      `AtlasPropertyV1 record has unrecognised version '${version}'. ` +
+      `Current contract version is '${CURRENT_ATLAS_PROPERTY_VERSION}'.`,
+  };
+}
+
