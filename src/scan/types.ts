@@ -780,13 +780,17 @@ export type InstallObjectSource = 'scan' | 'manual' | 'inferred';
 
 /**
  * A 3-D size in metres.
+ *
+ * These are object-local dimensions, not world-space axes.
+ * widthM, depthM, heightM describe the bounding box extents
+ * independent of the object's orientation in scan coordinate space.
  */
 export interface InstallDimensions {
-  /** Width along the X axis in metres. */
+  /** Width (horizontal extent, e.g. left-to-right) in metres. */
   widthM: number;
-  /** Depth along the Y axis in metres. */
+  /** Depth (horizontal extent, e.g. front-to-back) in metres. */
   depthM: number;
-  /** Height along the Z axis in metres. */
+  /** Height (vertical extent) in metres. */
   heightM: number;
 }
 

@@ -55,12 +55,16 @@ public enum InstallObjectSource: String, Codable, Sendable, Equatable {
 }
 
 /// A 3-D size in metres.
+///
+/// These are object-local dimensions, not world-space axes.
+/// `widthM`, `depthM`, and `heightM` describe bounding box extents
+/// independent of the object's orientation in scan coordinate space.
 public struct InstallDimensions: Codable, Sendable, Equatable {
-    /// Width along the X axis in metres.
+    /// Width (horizontal extent, e.g. left-to-right) in metres.
     public let widthM: Double
-    /// Depth along the Y axis in metres.
+    /// Depth (horizontal extent, e.g. front-to-back) in metres.
     public let depthM: Double
-    /// Height along the Z axis in metres.
+    /// Height (vertical extent) in metres.
     public let heightM: Double
 
     public init(widthM: Double, depthM: Double, heightM: Double) {
