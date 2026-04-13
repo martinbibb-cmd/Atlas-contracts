@@ -10,6 +10,11 @@
 
 export type { FieldValue, ProvenanceSource, ConfidenceBand } from './fieldValue';
 
+// ─── Unit wrappers ────────────────────────────────────────────────────────────
+
+export type { Watts, Kilowatts } from './units';
+export { toWatts, toKilowatts, wattsToKilowatts, kilowattsToWatts } from './units';
+
 // ─── Property identity ────────────────────────────────────────────────────────
 
 export type { PropertyIdentityV1 } from './propertyIdentity.types';
@@ -82,6 +87,7 @@ export type {
 // ─── Recommendations workspace ────────────────────────────────────────────────
 
 export type {
+  WhyNotReasonV1,
   RecommendationItemSummaryV1,
   RecommendationWorkspaceV1,
 } from './recommendations.types';

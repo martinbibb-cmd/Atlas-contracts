@@ -94,6 +94,17 @@ public struct VoiceNote: Codable, Sendable, Equatable {
     public let transcriptStatus: TranscriptStatus
     /// Current upload / remote sync state.
     public let syncState: VoiceNoteSyncState
+    /// Verbatim transcript snippet that triggered a fact extraction, if any.
+    ///
+    /// When the SessionKnowledgeExtractor derives a structured fact from this
+    /// voice note (e.g. household composition, boiler age), this field carries
+    /// the exact transcript segment responsible for the extraction.  Showing
+    /// this snippet in the UI ("You mentioned 'three kids'…") lets the user
+    /// verify the extracted fact and correct it immediately if needed.
+    ///
+    /// Absent when no fact has been extracted, or when the triggering snippet
+    /// cannot be isolated.
+    public let triggerSnippet: String?
 
     public init(
         id: UUID,
@@ -107,7 +118,8 @@ public struct VoiceNote: Codable, Sendable, Equatable {
         caption: String? = nil,
         transcript: String? = nil,
         transcriptStatus: TranscriptStatus = .notRequested,
-        syncState: VoiceNoteSyncState = .localOnly
+        syncState: VoiceNoteSyncState = .localOnly,
+        triggerSnippet: String? = nil
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -121,6 +133,7 @@ public struct VoiceNote: Codable, Sendable, Equatable {
         self.transcript = transcript
         self.transcriptStatus = transcriptStatus
         self.syncState = syncState
+        self.triggerSnippet = triggerSnippet
     }
 
     // MARK: Backward-compatible decoding
@@ -128,7 +141,7 @@ public struct VoiceNote: Codable, Sendable, Equatable {
     private enum CodingKeys: String, CodingKey {
         case id, createdAt, duration, localFilename, remoteAssetID
         case linkedRoomID, linkedObjectID, kind, caption, transcript
-        case transcriptStatus, syncState
+        case transcriptStatus, syncState, triggerSnippet
     }
 
     public init(from decoder: Decoder) throws {
@@ -145,5 +158,6 @@ public struct VoiceNote: Codable, Sendable, Equatable {
         transcript = try c.decodeIfPresent(String.self, forKey: .transcript)
         transcriptStatus = try c.decodeIfPresent(TranscriptStatus.self, forKey: .transcriptStatus) ?? .notRequested
         syncState = try c.decodeIfPresent(VoiceNoteSyncState.self, forKey: .syncState) ?? .localOnly
+        triggerSnippet = try c.decodeIfPresent(String.self, forKey: .triggerSnippet)
     }
 }

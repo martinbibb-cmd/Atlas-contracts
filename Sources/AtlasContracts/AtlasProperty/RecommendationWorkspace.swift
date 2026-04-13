@@ -13,6 +13,31 @@
 
 import Foundation
 
+// MARK: - WhyNotReasonV1
+
+/// A structured reason explaining why a system or measure was not recommended,
+/// or was given a cautionary status.
+///
+/// Linking each reason to an `educationalExplainerRef` lets the UI surface a
+/// deep link into the Educational Explainer library (e.g. "Pipe Capacity" for
+/// a hydraulic failure), giving customers and engineers actionable context.
+public struct WhyNotReasonV1: Codable, Sendable, Equatable {
+    /// Machine-readable reason code
+    /// (e.g. `"hydraulic_capacity_insufficient"`, `"flue_clearance_violation"`).
+    public let code: String
+    /// Human-readable plain-English explanation of the reason.
+    public let explanation: String
+    /// Reference ID for the Educational Explainer article that provides deeper
+    /// context.  Absent if no explainer is available for this code.
+    public let educationalExplainerRef: String?
+
+    public init(code: String, explanation: String, educationalExplainerRef: String? = nil) {
+        self.code = code
+        self.explanation = explanation
+        self.educationalExplainerRef = educationalExplainerRef
+    }
+}
+
 // MARK: - RecommendationCategory
 
 /// Technology category for a recommended measure.
@@ -53,6 +78,13 @@ public struct RecommendationItemSummaryV1: Codable, Sendable, Equatable {
     public let estimatedCarbonSavingKgCo2e: Double?
     public let estimatedBillSavingGbp: Double?
     public let status: RecommendationItemStatus
+    /// Structured reasons why this measure was rejected or flagged with caution.
+    ///
+    /// Populated when `status` is `.rejected` or the measure carries a
+    /// cautionary flag.  Each entry links the reason code to a plain-English
+    /// explanation and, optionally, to an Educational Explainer article.
+    /// `nil` for accepted or draft items.
+    public let whyNotReasons: [WhyNotReasonV1]?
 
     public init(
         itemId: String,
@@ -62,7 +94,8 @@ public struct RecommendationItemSummaryV1: Codable, Sendable, Equatable {
         estimatedCostGbp: Double? = nil,
         estimatedCarbonSavingKgCo2e: Double? = nil,
         estimatedBillSavingGbp: Double? = nil,
-        status: RecommendationItemStatus
+        status: RecommendationItemStatus,
+        whyNotReasons: [WhyNotReasonV1]? = nil
     ) {
         self.itemId = itemId
         self.category = category
@@ -72,6 +105,7 @@ public struct RecommendationItemSummaryV1: Codable, Sendable, Equatable {
         self.estimatedCarbonSavingKgCo2e = estimatedCarbonSavingKgCo2e
         self.estimatedBillSavingGbp = estimatedBillSavingGbp
         self.status = status
+        self.whyNotReasons = whyNotReasons
     }
 }
 
