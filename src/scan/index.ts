@@ -46,12 +46,24 @@ export type {
   SessionEventV1,
   SessionCaptureV1,
   UnknownSessionCapture,
+  InstallObjectType,
+  InstallObjectSource,
+  InstallDimensions,
+  InstallOrientation,
+  InstallObjectModelV1,
+  InstallRouteKind,
+  InstallMounting,
+  InstallRouteConfidence,
+  InstallPathPoint,
+  InstallRouteModelV1,
+  InstallAnnotation,
+  InstallLayerModelV1,
 } from './types';
 
 export { SUPPORTED_SCAN_BUNDLE_VERSIONS, isSupportedVersion, isUnsupportedVersion } from './versions';
 export type { ScanBundleVersion } from './versions';
 
-export { validateScanBundle, validateSessionCapture } from './validation';
+export { validateScanBundle, validateSessionCapture, validateInstallObject, validateInstallRoute, validateInstallLayer } from './validation';
 export type {
   ScanValidationResult,
   ScanValidationSuccess,
@@ -59,4 +71,13 @@ export type {
   SessionCaptureValidationResult,
   SessionCaptureValidationSuccess,
   SessionCaptureValidationFailure,
+  InstallObjectValidationResult,
+  InstallObjectValidationSuccess,
+  InstallObjectValidationFailure,
+  InstallRouteValidationResult,
+  InstallRouteValidationSuccess,
+  InstallRouteValidationFailure,
+  InstallLayerValidationResult,
+  InstallLayerValidationSuccess,
+  InstallLayerValidationFailure,
 } from './validation';
