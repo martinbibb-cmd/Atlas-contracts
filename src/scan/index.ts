@@ -46,6 +46,16 @@ export type {
   SessionEventV1,
   SessionCaptureV1,
   UnknownSessionCapture,
+  InstallObjectType,
+  InstallObjectSource,
+  InstallObjectModelV1,
+  InstallRouteKind,
+  InstallRouteMounting,
+  InstallRouteConfidence,
+  InstallPathPoint,
+  InstallRouteModelV1,
+  InstallAnnotation,
+  InstallLayerModelV1,
 } from './types';
 
 export { SUPPORTED_SCAN_BUNDLE_VERSIONS, isSupportedVersion, isUnsupportedVersion } from './versions';

@@ -741,3 +741,159 @@ export interface ScanImportConflictSetV1 {
   generatedAt: string;
 }
 
+// ─── Install markup models ────────────────────────────────────────────────────
+//
+// Canonical models for representing install intent captured during a survey:
+// physical objects placed in the scene, pipe/service routes, and layered
+// overlays distinguishing existing from proposed work.
+//
+// Design principles:
+//   - All coordinates use the same ScanPoint3D space as scan geometry.
+//   - Confidence differentiates measured (LiDAR/ARKit), hand-drawn, and
+//     estimated routes so the recommendation engine can weight them.
+//   - Layers separate existing from proposed work — enabling "before / after"
+//     visualisation and disruption analysis without mixing concerns.
+//   - These types are the single canonical source; scan, engine, and reports
+//     all consume the same shapes.
+
+/**
+ * Type of a physical install object placed in the scene.
+ */
+export type InstallObjectType =
+  | 'boiler'
+  | 'cylinder'
+  | 'radiator'
+  | 'thermostat'
+  | 'flue'
+  | 'pump'
+  | 'valve'
+  | 'other';
+
+/**
+ * How an install object was placed in the scene.
+ *
+ * scan     — position derived from LiDAR / ARKit scan data
+ * manual   — position set by the engineer via gesture markup
+ * inferred — position estimated by the system from context
+ */
+export type InstallObjectSource = 'scan' | 'manual' | 'inferred';
+
+/**
+ * InstallObjectModelV1 — a physical heating or plumbing object placed in scene
+ * coordinate space.
+ *
+ * id          — unique identifier (UUID string)
+ * type        — kind of install object
+ * position    — 3-D centroid in scan coordinate space (metric_m)
+ * dimensions  — optional axis-aligned bounding dimensions in metres
+ * orientation — optional heading of the object's primary face (degrees
+ *               clockwise from north in the horizontal plane)
+ * source      — how the placement was determined
+ */
+export interface InstallObjectModelV1 {
+  id: string;
+  type: InstallObjectType;
+  position: ScanPoint3D;
+  dimensions?: {
+    widthM: number;
+    heightM: number;
+    depthM: number;
+  };
+  orientation?: {
+    /** Clockwise heading in degrees (0 = north / positive-Y axis). */
+    yawDeg: number;
+  };
+  source: InstallObjectSource;
+}
+
+/**
+ * Semantic kind of a pipe or service route.
+ *
+ * flow     — primary flow pipe (hot / heating flow)
+ * return   — return pipe
+ * gas      — gas supply pipe
+ * flue     — flue / exhaust duct
+ * overflow — overflow / pressure-relief pipe
+ * other    — any other service route
+ */
+export type InstallRouteKind = 'flow' | 'return' | 'gas' | 'flue' | 'overflow' | 'other';
+
+/**
+ * How a route is physically mounted.
+ *
+ * surface   — surface-mounted (visible pipework)
+ * boxed     — concealed in a duct or boxing
+ * buried    — buried in wall, floor, or ceiling void
+ * suspended — suspended from ceiling or structural element
+ * other     — any other mounting arrangement
+ */
+export type InstallRouteMounting = 'surface' | 'boxed' | 'buried' | 'suspended' | 'other';
+
+/**
+ * Confidence level of a route's geometry.
+ *
+ * measured  — spatially anchored from scan, markers, or known dimensions
+ * drawn     — hand-drawn by engineer via gesture markup
+ * estimated — generated or inferred by the system
+ */
+export type InstallRouteConfidence = 'measured' | 'drawn' | 'estimated';
+
+/**
+ * A single waypoint along an install route path.
+ */
+export interface InstallPathPoint {
+  /** Position in scan coordinate space (metric_m). */
+  position: ScanPoint3D;
+}
+
+/**
+ * InstallRouteModelV1 — a single pipe or service route through the property.
+ *
+ * id          — unique identifier (UUID string)
+ * kind        — semantic type of the route
+ * diameterMm  — nominal pipe diameter in millimetres
+ * path        — ordered list of waypoints defining the route centreline
+ * mounting    — how the route is physically concealed or exposed
+ * confidence  — how the route geometry was determined
+ */
+export interface InstallRouteModelV1 {
+  id: string;
+  kind: InstallRouteKind;
+  diameterMm: number;
+  path: InstallPathPoint[];
+  mounting: InstallRouteMounting;
+  confidence: InstallRouteConfidence;
+}
+
+/**
+ * A spatial annotation attached to an install layer.
+ *
+ * id       — unique identifier (UUID string)
+ * text     — human-readable note text
+ * position — optional 3-D anchor point in scan coordinate space
+ */
+export interface InstallAnnotation {
+  id: string;
+  text: string;
+  position?: ScanPoint3D;
+}
+
+/**
+ * InstallLayerModelV1 — a layered overlay of existing and proposed routes for
+ * a property.
+ *
+ * Separating existing from proposed routes enables:
+ *   - "before / after" visualisation
+ *   - disruption analysis (which existing routes are disturbed)
+ *   - complexity scoring (length, bends, visibility of new work)
+ *
+ * existing — routes that are present in the property today
+ * proposed — routes that form part of the proposed installation
+ * notes    — spatial annotations contextualising the layer
+ */
+export interface InstallLayerModelV1 {
+  existing: InstallRouteModelV1[];
+  proposed: InstallRouteModelV1[];
+  notes: InstallAnnotation[];
+}
+
