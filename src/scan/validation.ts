@@ -17,7 +17,16 @@
  */
 
 import { SUPPORTED_SCAN_BUNDLE_VERSIONS } from './versions';
-import type { ScanBundle, ScanBundleV1, UnknownScanBundle, SessionCaptureV1, UnknownSessionCapture } from './types';
+import type {
+  ScanBundle,
+  ScanBundleV1,
+  UnknownScanBundle,
+  SessionCaptureV1,
+  UnknownSessionCapture,
+  InstallObjectModelV1,
+  InstallRouteModelV1,
+  InstallLayerModelV1,
+} from './types';
 
 // ─── Validation result types ──────────────────────────────────────────────────
 
@@ -631,3 +640,226 @@ export function checkAtlasPropertyVersion(
   };
 }
 
+// ─── Install markup validation ────────────────────────────────────────────────
+
+const VALID_INSTALL_OBJECT_TYPES = [
+  'boiler',
+  'cylinder',
+  'radiator',
+  'thermostat',
+  'flue',
+  'pump',
+  'valve',
+  'consumer_unit',
+  'other',
+] as const;
+
+const VALID_INSTALL_OBJECT_SOURCES = ['scan', 'manual', 'inferred'] as const;
+const VALID_INSTALL_ROUTE_KINDS = ['flow', 'return', 'gas', 'cold', 'hot', 'flue', 'other'] as const;
+const VALID_INSTALL_MOUNTINGS = ['surface', 'boxed', 'buried', 'other'] as const;
+const VALID_INSTALL_ROUTE_CONFIDENCES = ['measured', 'drawn', 'estimated'] as const;
+
+function validateInstallPoint3D(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isNumber(value['x'])) errors.push(`${path}.x: must be a finite number`);
+  if (!isNumber(value['y'])) errors.push(`${path}.y: must be a finite number`);
+  if (!isNumber(value['z'])) errors.push(`${path}.z: must be a finite number`);
+  return errors;
+}
+
+function validateInstallDimensions(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isNumber(value['widthM'])) errors.push(`${path}.widthM: must be a finite number`);
+  if (!isNumber(value['depthM'])) errors.push(`${path}.depthM: must be a finite number`);
+  if (!isNumber(value['heightM'])) errors.push(`${path}.heightM: must be a finite number`);
+  return errors;
+}
+
+function validateInstallOrientation(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isNumber(value['yawDeg'])) errors.push(`${path}.yawDeg: must be a finite number`);
+  return errors;
+}
+
+function validateInstallObjectModelV1(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isString(value['id'])) errors.push(`${path}.id: must be a string`);
+  if (!(VALID_INSTALL_OBJECT_TYPES as readonly string[]).includes(value['type'] as string)) {
+    errors.push(`${path}.type: must be one of ${VALID_INSTALL_OBJECT_TYPES.join(', ')}`);
+  }
+  errors.push(...validateInstallPoint3D(value['position'], `${path}.position`));
+  errors.push(...validateInstallDimensions(value['dimensions'], `${path}.dimensions`));
+  errors.push(...validateInstallOrientation(value['orientation'], `${path}.orientation`));
+  if (!(VALID_INSTALL_OBJECT_SOURCES as readonly string[]).includes(value['source'] as string)) {
+    errors.push(`${path}.source: must be 'scan' | 'manual' | 'inferred'`);
+  }
+  return errors;
+}
+
+function validateInstallPathPoint(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isNumber(value['x'])) errors.push(`${path}.x: must be a finite number`);
+  if (!isNumber(value['y'])) errors.push(`${path}.y: must be a finite number`);
+  if (!isNumber(value['z'])) errors.push(`${path}.z: must be a finite number`);
+  if (value['elevationOffsetM'] !== undefined && !isNumber(value['elevationOffsetM'])) {
+    errors.push(`${path}.elevationOffsetM: must be a finite number when present`);
+  }
+  return errors;
+}
+
+function validateInstallRouteModelV1(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isString(value['id'])) errors.push(`${path}.id: must be a string`);
+  if (!(VALID_INSTALL_ROUTE_KINDS as readonly string[]).includes(value['kind'] as string)) {
+    errors.push(`${path}.kind: must be one of ${VALID_INSTALL_ROUTE_KINDS.join(', ')}`);
+  }
+  if (!isNumber(value['diameterMm'])) errors.push(`${path}.diameterMm: must be a finite number`);
+  if (!isArray(value['path'])) {
+    errors.push(`${path}.path: must be an array`);
+  } else {
+    (value['path'] as unknown[]).forEach((pt, i) => {
+      errors.push(...validateInstallPathPoint(pt, `${path}.path[${i}]`));
+    });
+  }
+  if (!(VALID_INSTALL_MOUNTINGS as readonly string[]).includes(value['mounting'] as string)) {
+    errors.push(`${path}.mounting: must be one of ${VALID_INSTALL_MOUNTINGS.join(', ')}`);
+  }
+  if (
+    !(VALID_INSTALL_ROUTE_CONFIDENCES as readonly string[]).includes(
+      value['confidence'] as string
+    )
+  ) {
+    errors.push(`${path}.confidence: must be 'measured' | 'drawn' | 'estimated'`);
+  }
+  return errors;
+}
+
+function validateInstallAnnotation(value: unknown, path: string): string[] {
+  if (!isObject(value)) return [`${path}: must be an object`];
+  const errors: string[] = [];
+  if (!isString(value['id'])) errors.push(`${path}.id: must be a string`);
+  if (!isString(value['text'])) errors.push(`${path}.text: must be a string`);
+  if (value['position'] !== undefined) {
+    errors.push(...validateInstallPoint3D(value['position'], `${path}.position`));
+  }
+  return errors;
+}
+
+// ─── Install markup validation result types ───────────────────────────────────
+
+export interface InstallObjectValidationSuccess {
+  ok: true;
+  object: InstallObjectModelV1;
+}
+
+export interface InstallObjectValidationFailure {
+  ok: false;
+  errors: string[];
+}
+
+export type InstallObjectValidationResult =
+  | InstallObjectValidationSuccess
+  | InstallObjectValidationFailure;
+
+export interface InstallRouteValidationSuccess {
+  ok: true;
+  route: InstallRouteModelV1;
+}
+
+export interface InstallRouteValidationFailure {
+  ok: false;
+  errors: string[];
+}
+
+export type InstallRouteValidationResult =
+  | InstallRouteValidationSuccess
+  | InstallRouteValidationFailure;
+
+export interface InstallLayerValidationSuccess {
+  ok: true;
+  layer: InstallLayerModelV1;
+}
+
+export interface InstallLayerValidationFailure {
+  ok: false;
+  errors: string[];
+}
+
+export type InstallLayerValidationResult =
+  | InstallLayerValidationSuccess
+  | InstallLayerValidationFailure;
+
+/**
+ * validateInstallObject — validates an unknown input against InstallObjectModelV1.
+ *
+ * Returns `{ ok: true, object }` on success or `{ ok: false, errors }` on failure.
+ */
+export function validateInstallObject(input: unknown): InstallObjectValidationResult {
+  if (!isObject(input)) {
+    return { ok: false, errors: ['Install object must be a non-null JSON object'] };
+  }
+  const errors = validateInstallObjectModelV1(input, 'installObject');
+  if (errors.length > 0) {
+    return { ok: false, errors };
+  }
+  return { ok: true, object: input as InstallObjectModelV1 };
+}
+
+/**
+ * validateInstallRoute — validates an unknown input against InstallRouteModelV1.
+ *
+ * Returns `{ ok: true, route }` on success or `{ ok: false, errors }` on failure.
+ */
+export function validateInstallRoute(input: unknown): InstallRouteValidationResult {
+  if (!isObject(input)) {
+    return { ok: false, errors: ['Install route must be a non-null JSON object'] };
+  }
+  const errors = validateInstallRouteModelV1(input, 'installRoute');
+  if (errors.length > 0) {
+    return { ok: false, errors };
+  }
+  return { ok: true, route: input as InstallRouteModelV1 };
+}
+
+/**
+ * validateInstallLayer — validates an unknown input against InstallLayerModelV1.
+ *
+ * Returns `{ ok: true, layer }` on success or `{ ok: false, errors }` on failure.
+ */
+export function validateInstallLayer(input: unknown): InstallLayerValidationResult {
+  if (!isObject(input)) {
+    return { ok: false, errors: ['Install layer must be a non-null JSON object'] };
+  }
+  const errors: string[] = [];
+  if (!isArray(input['existing'])) {
+    errors.push('existing: must be an array');
+  } else {
+    (input['existing'] as unknown[]).forEach((r, i) => {
+      errors.push(...validateInstallRouteModelV1(r, `existing[${i}]`));
+    });
+  }
+  if (!isArray(input['proposed'])) {
+    errors.push('proposed: must be an array');
+  } else {
+    (input['proposed'] as unknown[]).forEach((r, i) => {
+      errors.push(...validateInstallRouteModelV1(r, `proposed[${i}]`));
+    });
+  }
+  if (!isArray(input['notes'])) {
+    errors.push('notes: must be an array');
+  } else {
+    (input['notes'] as unknown[]).forEach((n, i) => {
+      errors.push(...validateInstallAnnotation(n, `notes[${i}]`));
+    });
+  }
+  if (errors.length > 0) {
+    return { ok: false, errors };
+  }
+  return { ok: true, layer: input as InstallLayerModelV1 };
+}

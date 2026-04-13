@@ -741,3 +741,188 @@ export interface ScanImportConflictSetV1 {
   generatedAt: string;
 }
 
+// ─── Install markup models ────────────────────────────────────────────────────
+//
+// Canonical models for structured install markup produced by the scan app and
+// consumed by the recommendation engine.  These types are the shared contract
+// that decouples capture intent (atlas-scans-ios) from interpretation
+// (atlas-recommendation) and ensures one portable, engine-readable truth.
+//
+// Design principles:
+//   - All spatial data is in scan coordinate space (metric_m, Y-up).
+//   - Confidence distinguishes measured geometry from drawn or estimated intent.
+//   - Layers separate existing system state from proposed changes.
+
+/**
+ * Type of an install object placed on a floor plan or wall photo.
+ *
+ * Extensible: the 'other' variant captures types not yet enumerated.
+ */
+export type InstallObjectType =
+  | 'boiler'
+  | 'cylinder'
+  | 'radiator'
+  | 'thermostat'
+  | 'flue'
+  | 'pump'
+  | 'valve'
+  | 'consumer_unit'
+  | 'other';
+
+/**
+ * Source of an install object placement.
+ *
+ * scan     — derived from LiDAR / RoomPlan geometry
+ * manual   — placed manually by the engineer via gesture
+ * inferred — inferred by the engine from surrounding context
+ */
+export type InstallObjectSource = 'scan' | 'manual' | 'inferred';
+
+/**
+ * A 3-D size in metres.
+ *
+ * These are object-local dimensions, not world-space axes.
+ * widthM, depthM, heightM describe the bounding box extents
+ * independent of the object's orientation in scan coordinate space.
+ */
+export interface InstallDimensions {
+  /** Width (horizontal extent, e.g. left-to-right) in metres. */
+  widthM: number;
+  /** Depth (horizontal extent, e.g. front-to-back) in metres. */
+  depthM: number;
+  /** Height (vertical extent) in metres. */
+  heightM: number;
+}
+
+/**
+ * Orientation of an install object expressed as a rotation in degrees about
+ * the vertical (Z) axis relative to the scan coordinate frame.
+ */
+export interface InstallOrientation {
+  /** Rotation about the Z axis in degrees (0–360). */
+  yawDeg: number;
+}
+
+/**
+ * InstallObjectModelV1 — a single install object placed on a floor plan or
+ * wall photo.
+ *
+ * id          — unique identifier (UUID string)
+ * type        — category of system component
+ * position    — centre position in scan coordinate space (metric_m)
+ * dimensions  — approximate bounding dimensions in metres
+ * orientation — rotational orientation about the vertical axis
+ * source      — how the placement was derived
+ */
+export interface InstallObjectModelV1 {
+  id: string;
+  type: InstallObjectType;
+  position: ScanPoint3D;
+  dimensions: InstallDimensions;
+  orientation: InstallOrientation;
+  source: InstallObjectSource;
+}
+
+/**
+ * Kind of an install route, reflecting the service carried by the pipe or
+ * cable run.
+ *
+ * flow    — primary flow (heating / hot water)
+ * return  — return leg
+ * gas     — gas supply pipe
+ * cold    — cold water supply
+ * hot     — hot water distribution
+ * flue    — flue / exhaust run
+ * other   — uncategorised route
+ */
+export type InstallRouteKind =
+  | 'flow'
+  | 'return'
+  | 'gas'
+  | 'cold'
+  | 'hot'
+  | 'flue'
+  | 'other';
+
+/**
+ * How a pipe run is mounted / concealed.
+ *
+ * surface — exposed on wall or floor surface
+ * boxed   — enclosed in a boxing or duct
+ * buried  — buried in floor screed or wall chase
+ * other   — other mounting arrangement
+ */
+export type InstallMounting = 'surface' | 'boxed' | 'buried' | 'other';
+
+/**
+ * Confidence level of a route path.
+ *
+ * measured  — path derived from scan geometry (highest confidence)
+ * drawn     — path drawn manually by the engineer
+ * estimated — path inferred or approximated
+ */
+export type InstallRouteConfidence = 'measured' | 'drawn' | 'estimated';
+
+/**
+ * A single waypoint on an install route path.
+ *
+ * Extends ScanPoint3D with an optional elevation offset that can represent a
+ * pipe rising to ceiling height independently of the scan-space Z axis.
+ */
+export interface InstallPathPoint extends ScanPoint3D {
+  /** Optional elevation above floor level in metres (supplements z). */
+  elevationOffsetM?: number;
+}
+
+/**
+ * InstallRouteModelV1 — a routed pipe or cable run between two or more points.
+ *
+ * id         — unique identifier (UUID string)
+ * kind       — service type carried by this route
+ * diameterMm — nominal pipe / conduit diameter in millimetres
+ * path       — ordered sequence of waypoints defining the route geometry
+ * mounting   — how the route is mounted or concealed
+ * confidence — how the path geometry was derived
+ */
+export interface InstallRouteModelV1 {
+  id: string;
+  kind: InstallRouteKind;
+  diameterMm: number;
+  path: InstallPathPoint[];
+  mounting: InstallMounting;
+  confidence: InstallRouteConfidence;
+}
+
+/**
+ * A spatial annotation attached to an install layer (e.g. a constraint note
+ * or measurement label placed on the plan).
+ *
+ * id       — unique identifier (UUID string)
+ * text     — free-text annotation content
+ * position — optional spatial anchor in scan coordinate space
+ */
+export interface InstallAnnotation {
+  id: string;
+  text: string;
+  position?: ScanPoint3D;
+}
+
+/**
+ * InstallLayerModelV1 — a layered view of install routes separating existing
+ * system pipework from proposed new routes.
+ *
+ * existing — routes that are already installed in the property
+ * proposed — routes being planned as part of the new installation
+ * notes    — spatial annotations attached to this layer (constraints,
+ *            measurements, labels)
+ *
+ * This separation is key: it lets the recommendation engine reason about
+ * re-use of existing routes versus the cost and complexity of new routes,
+ * and lets reports show clear "before / after" overlays.
+ */
+export interface InstallLayerModelV1 {
+  existing: InstallRouteModelV1[];
+  proposed: InstallRouteModelV1[];
+  notes: InstallAnnotation[];
+}
+

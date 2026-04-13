@@ -503,6 +503,192 @@ final class AtlasContractsTests: XCTestCase {
         XCTAssertEqual(AudioTranscriptionStatus.processing.rawValue, "processing")
         XCTAssertEqual(AudioTranscriptionStatus.complete.rawValue, "complete")
     }
+
+    // MARK: - InstallMarkup — Codable round-trip
+
+    func testInstallObjectModelV1RoundTrip() throws {
+        let obj = InstallObjectModelV1(
+            id: "obj-001",
+            type: .boiler,
+            position: ScanPoint3D(x: 1.0, y: 2.0, z: 0.0),
+            dimensions: InstallDimensions(widthM: 0.5, depthM: 0.4, heightM: 0.7),
+            orientation: InstallOrientation(yawDeg: 90),
+            source: .scan
+        )
+        let encoded = try JSONEncoder().encode(obj)
+        let decoded = try JSONDecoder().decode(InstallObjectModelV1.self, from: encoded)
+        XCTAssertEqual(obj, decoded)
+        XCTAssertEqual(decoded.type, .boiler)
+        XCTAssertEqual(decoded.source, .scan)
+        XCTAssertEqual(decoded.position.x, 1.0)
+        XCTAssertEqual(decoded.dimensions.widthM, 0.5)
+        XCTAssertEqual(decoded.orientation.yawDeg, 90)
+    }
+
+    func testInstallRouteModelV1RoundTrip() throws {
+        let route = InstallRouteModelV1(
+            id: "route-001",
+            kind: .flow,
+            diameterMm: 22,
+            path: [
+                InstallPathPoint(x: 0.0, y: 0.0, z: 0.0),
+                InstallPathPoint(x: 1.0, y: 0.0, z: 0.0, elevationOffsetM: 2.4),
+            ],
+            mounting: .surface,
+            confidence: .measured
+        )
+        let encoded = try JSONEncoder().encode(route)
+        let decoded = try JSONDecoder().decode(InstallRouteModelV1.self, from: encoded)
+        XCTAssertEqual(route, decoded)
+        XCTAssertEqual(decoded.kind, .flow)
+        XCTAssertEqual(decoded.diameterMm, 22)
+        XCTAssertEqual(decoded.path.count, 2)
+        XCTAssertEqual(decoded.path[1].elevationOffsetM, 2.4)
+        XCTAssertNil(decoded.path[0].elevationOffsetM)
+        XCTAssertEqual(decoded.mounting, .surface)
+        XCTAssertEqual(decoded.confidence, .measured)
+    }
+
+    func testInstallLayerModelV1RoundTrip() throws {
+        let layer = InstallLayerModelV1(
+            existing: [
+                InstallRouteModelV1(
+                    id: "route-existing-001",
+                    kind: .return,
+                    diameterMm: 15,
+                    path: [InstallPathPoint(x: 0, y: 0, z: 0)],
+                    mounting: .boxed,
+                    confidence: .measured
+                ),
+            ],
+            proposed: [
+                InstallRouteModelV1(
+                    id: "route-proposed-001",
+                    kind: .gas,
+                    diameterMm: 22,
+                    path: [InstallPathPoint(x: 0, y: 0, z: 0), InstallPathPoint(x: 2, y: 0, z: 0)],
+                    mounting: .surface,
+                    confidence: .drawn
+                ),
+            ],
+            notes: [
+                InstallAnnotation(id: "note-001", text: "Low ceiling clearance"),
+                InstallAnnotation(
+                    id: "note-002",
+                    text: "Existing route reusable",
+                    position: ScanPoint3D(x: 1.5, y: 0.5, z: 0.0)
+                ),
+            ]
+        )
+        let encoded = try JSONEncoder().encode(layer)
+        let decoded = try JSONDecoder().decode(InstallLayerModelV1.self, from: encoded)
+        XCTAssertEqual(layer, decoded)
+        XCTAssertEqual(decoded.existing.count, 1)
+        XCTAssertEqual(decoded.proposed.count, 1)
+        XCTAssertEqual(decoded.notes.count, 2)
+        XCTAssertNil(decoded.notes[0].position)
+        XCTAssertNotNil(decoded.notes[1].position)
+    }
+
+    func testInstallLayerModelV1EmptyRoundTrip() throws {
+        let layer = InstallLayerModelV1(existing: [], proposed: [], notes: [])
+        let encoded = try JSONEncoder().encode(layer)
+        let decoded = try JSONDecoder().decode(InstallLayerModelV1.self, from: encoded)
+        XCTAssertEqual(layer, decoded)
+        XCTAssertTrue(decoded.existing.isEmpty)
+        XCTAssertTrue(decoded.proposed.isEmpty)
+        XCTAssertTrue(decoded.notes.isEmpty)
+    }
+
+    // MARK: - InstallMarkup — enum raw values
+
+    func testInstallObjectTypeRawValues() {
+        XCTAssertEqual(InstallObjectType.boiler.rawValue, "boiler")
+        XCTAssertEqual(InstallObjectType.cylinder.rawValue, "cylinder")
+        XCTAssertEqual(InstallObjectType.radiator.rawValue, "radiator")
+        XCTAssertEqual(InstallObjectType.thermostat.rawValue, "thermostat")
+        XCTAssertEqual(InstallObjectType.flue.rawValue, "flue")
+        XCTAssertEqual(InstallObjectType.pump.rawValue, "pump")
+        XCTAssertEqual(InstallObjectType.valve.rawValue, "valve")
+        XCTAssertEqual(InstallObjectType.consumerUnit.rawValue, "consumer_unit")
+        XCTAssertEqual(InstallObjectType.other.rawValue, "other")
+    }
+
+    func testInstallObjectSourceRawValues() {
+        XCTAssertEqual(InstallObjectSource.scan.rawValue, "scan")
+        XCTAssertEqual(InstallObjectSource.manual.rawValue, "manual")
+        XCTAssertEqual(InstallObjectSource.inferred.rawValue, "inferred")
+    }
+
+    func testInstallRouteKindRawValues() {
+        XCTAssertEqual(InstallRouteKind.flow.rawValue, "flow")
+        XCTAssertEqual(InstallRouteKind.return.rawValue, "return")
+        XCTAssertEqual(InstallRouteKind.gas.rawValue, "gas")
+        XCTAssertEqual(InstallRouteKind.cold.rawValue, "cold")
+        XCTAssertEqual(InstallRouteKind.hot.rawValue, "hot")
+        XCTAssertEqual(InstallRouteKind.flue.rawValue, "flue")
+        XCTAssertEqual(InstallRouteKind.other.rawValue, "other")
+    }
+
+    func testInstallMountingRawValues() {
+        XCTAssertEqual(InstallMounting.surface.rawValue, "surface")
+        XCTAssertEqual(InstallMounting.boxed.rawValue, "boxed")
+        XCTAssertEqual(InstallMounting.buried.rawValue, "buried")
+        XCTAssertEqual(InstallMounting.other.rawValue, "other")
+    }
+
+    func testInstallRouteConfidenceRawValues() {
+        XCTAssertEqual(InstallRouteConfidence.measured.rawValue, "measured")
+        XCTAssertEqual(InstallRouteConfidence.drawn.rawValue, "drawn")
+        XCTAssertEqual(InstallRouteConfidence.estimated.rawValue, "estimated")
+    }
+
+    // MARK: - InstallMarkup — JSON decode from raw JSON
+
+    func testInstallObjectDecodesFromJSON() throws {
+        let json = """
+        {
+          "id": "obj-boiler-01",
+          "type": "boiler",
+          "position": { "x": 1.2, "y": 0.5, "z": 0.0 },
+          "dimensions": { "widthM": 0.6, "depthM": 0.4, "heightM": 0.8 },
+          "orientation": { "yawDeg": 180 },
+          "source": "manual"
+        }
+        """
+        let obj = try JSONDecoder().decode(InstallObjectModelV1.self, from: json.data(using: .utf8)!)
+        XCTAssertEqual(obj.id, "obj-boiler-01")
+        XCTAssertEqual(obj.type, .boiler)
+        XCTAssertEqual(obj.source, .manual)
+        XCTAssertEqual(obj.position.x, 1.2)
+        XCTAssertEqual(obj.dimensions.heightM, 0.8)
+        XCTAssertEqual(obj.orientation.yawDeg, 180)
+    }
+
+    func testInstallRouteDecodesFromJSON() throws {
+        let json = """
+        {
+          "id": "route-flow-01",
+          "kind": "flow",
+          "diameterMm": 22,
+          "path": [
+            { "x": 0.0, "y": 0.0, "z": 0.0 },
+            { "x": 3.0, "y": 0.0, "z": 0.0, "elevationOffsetM": 2.1 }
+          ],
+          "mounting": "boxed",
+          "confidence": "drawn"
+        }
+        """
+        let route = try JSONDecoder().decode(InstallRouteModelV1.self, from: json.data(using: .utf8)!)
+        XCTAssertEqual(route.id, "route-flow-01")
+        XCTAssertEqual(route.kind, .flow)
+        XCTAssertEqual(route.diameterMm, 22)
+        XCTAssertEqual(route.path.count, 2)
+        XCTAssertNil(route.path[0].elevationOffsetM)
+        XCTAssertEqual(route.path[1].elevationOffsetM, 2.1)
+        XCTAssertEqual(route.mounting, .boxed)
+        XCTAssertEqual(route.confidence, .drawn)
+    }
 }
 
 // MARK: - Fixtures
