@@ -48,8 +48,14 @@ function nowIso(): string {
 }
 
 /**
- * Generates a simple deterministic placeholder ID from a seed string.
- * In production, replace with a proper UUID library.
+ * Generates a placeholder deterministic ID from a seed string.
+ *
+ * ⚠️  This is NOT suitable for production use: it can produce ID collisions
+ * when seeds share a long common prefix or differ only after 32 characters.
+ *
+ * Replace with `crypto.randomUUID()` (Node ≥ 15 / modern browsers) or an
+ * equivalent UUID v4 library before deploying to production.  Callers can
+ * also supply their own IDs via `ImportOptions.modelId`.
  */
 function syntheticId(seed: string): string {
   // Simple deterministic surrogate — not cryptographically random.
