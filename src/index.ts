@@ -83,3 +83,37 @@ export type {
 // ─── AtlasProperty module ─────────────────────────────────────────────────────
 
 export * from './atlasProperty/index';
+
+// ─── Spatial alignment module ─────────────────────────────────────────────────
+
+export type {
+  AtlasWorldPosition,
+  AtlasAnchor,
+  AtlasVerticalRelation,
+  AtlasInferredRoute,
+} from './atlasSpatial/atlasSpatialAlignment.types';
+
+export type {
+  RelativePosition,
+  ScreenPosition,
+  CameraPose,
+  AlignmentInsight,
+} from './features/spatialAlignment/spatialAlignment.engine';
+
+export {
+  getRelativePosition,
+  projectToViewPlane,
+  buildAlignmentInsights,
+  computeInferredRouteLength,
+} from './features/spatialAlignment/spatialAlignment.engine';
+
+export {
+  getAnchors,
+  getAnchorById,
+  getAnchorsForRoom,
+  getVerticalRelations,
+  getVerticalRelationsForAnchor,
+  getInferredRoutes,
+  getInferredRouteById,
+  getInferredRoutesByType,
+} from './features/spatialAlignment/spatialAlignment.selectors';

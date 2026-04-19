@@ -136,5 +136,37 @@ export function validateAtlasSpatialModel(
     if (error) return { ok: false, error };
   }
 
+  // ─── Optional spatial-alignment arrays ──────────────────────────────────────
+  // These fields were added in the Spatial Alignment feature and may be absent
+  // on models created before this feature was introduced.
+
+  if (input['anchors'] !== undefined) {
+    const err = isIdArray('anchors', input['anchors']);
+    if (err) return { ok: false, error: err };
+  }
+
+  if (input['verticalRelations'] !== undefined) {
+    if (!Array.isArray(input['verticalRelations'])) {
+      return { ok: false, error: 'verticalRelations must be an array' };
+    }
+    for (let i = 0; i < (input['verticalRelations'] as unknown[]).length; i++) {
+      const item = (input['verticalRelations'] as unknown[])[i];
+      if (!isRecord(item)) {
+        return { ok: false, error: `verticalRelations[${i}] must be an object` };
+      }
+      if (!isNonEmptyString(item['fromAnchorId'])) {
+        return { ok: false, error: `verticalRelations[${i}].fromAnchorId must be a non-empty string` };
+      }
+      if (!isNonEmptyString(item['toAnchorId'])) {
+        return { ok: false, error: `verticalRelations[${i}].toAnchorId must be a non-empty string` };
+      }
+    }
+  }
+
+  if (input['inferredRoutes'] !== undefined) {
+    const err = isIdArray('inferredRoutes', input['inferredRoutes']);
+    if (err) return { ok: false, error: err };
+  }
+
   return { ok: true, model: input as unknown as AtlasSpatialModelV1 };
 }

@@ -75,6 +75,15 @@ export type {
 } from './atlasSpatialPatch.schema';
 export { validateAtlasSpatialPatch } from './atlasSpatialPatch.schema';
 
+// ─── Spatial alignment types ──────────────────────────────────────────────────
+
+export type {
+  AtlasWorldPosition,
+  AtlasAnchor,
+  AtlasVerticalRelation,
+  AtlasInferredRoute,
+} from './atlasSpatialAlignment.types';
+
 // ─── Import / apply ───────────────────────────────────────────────────────────
 
 export type { ImportOptions } from './buildInitialSpatialModelFromSessionCapture';
