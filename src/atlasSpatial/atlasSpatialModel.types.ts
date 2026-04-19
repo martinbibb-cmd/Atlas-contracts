@@ -19,6 +19,7 @@
 import type { AtlasGeometry, LocalCoordinateSystem } from './atlasGeometry.types';
 import type { AtlasEvidenceMarkerV1 } from './atlasEvidence.types';
 import type { AtlasProvenanceEntryV1 } from './atlasProvenance.types';
+import type { AtlasAnchor, AtlasVerticalRelation, AtlasInferredRoute } from './atlasSpatialAlignment.types';
 
 // ─── Entity base ──────────────────────────────────────────────────────────────
 
@@ -366,6 +367,39 @@ export interface AtlasSpatialModelV1 {
   evidenceMarkers: AtlasEvidenceMarkerV1[];
   /** Immutable audit trail of model creation and modifications. */
   provenance: AtlasProvenanceEntryV1[];
+  /**
+   * Named, positioned anchor objects for Spatial Alignment.
+   *
+   * Anchors record absolute world positions for key building objects (boiler,
+   * cylinder, consumer unit, etc.) to support alignment view calculations.
+   * Optional — models created before this feature was added will omit this
+   * field and remain fully valid.
+   */
+  anchors?: AtlasAnchor[];
+  /**
+   * Approximate geographic origin of the building for optional georeferencing.
+   *
+   * Both `lat` and `lng` are optional; the object itself is optional.  Used
+   * only when GPS alignment is available during capture.
+   */
+  buildingOrigin?: {
+    lat?: number;
+    lng?: number;
+  };
+  /**
+   * Pre-computed vertical relationships between anchors.
+   *
+   * Populated by the Spatial Alignment Engine after anchors are placed.
+   * Optional — absent when no anchors have been placed yet.
+   */
+  verticalRelations?: AtlasVerticalRelation[];
+  /**
+   * Inferred routing paths (pipes, cables, flues) derived from anchor positions.
+   *
+   * All entries have `confidence: 'inferred'` and must carry a `reason` string.
+   * Optional — absent when no routing has been inferred yet.
+   */
+  inferredRoutes?: AtlasInferredRoute[];
   /** Monotonically increasing revision counter. Starts at 1. */
   revision: number;
   /** ISO-8601 timestamp of when this model was first created. */
