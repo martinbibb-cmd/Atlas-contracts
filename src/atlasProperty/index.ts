@@ -110,3 +110,17 @@ export type {
 } from './visitLifecycle.types';
 
 export { ATLAS_VISIT_STATUS_TRANSITIONS } from './visitLifecycle.types';
+
+// ─── Planning overlay ─────────────────────────────────────────────────────────
+
+export type {
+  AtlasEmitterType,
+  AtlasProposedEmitterV1,
+  AtlasRoomPlanNoteV1,
+  AtlasRouteMarkupV1,
+  AtlasAccessNoteV1,
+  AtlasPlanningOverlayV1,
+  AtlasPlanningReadiness,
+} from './planningOverlay.types';
+
+export { derivePlanningReadiness } from './planningOverlay.types';
