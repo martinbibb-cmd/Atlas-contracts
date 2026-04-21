@@ -31,6 +31,7 @@ import type { CurrentSystemModelV1 } from './currentSystem.types';
 import type { EvidenceModelV1 } from './evidence.types';
 import type { DerivedModelV1 } from './derived.types';
 import type { RecommendationWorkspaceV1 } from './recommendations.types';
+import type { AtlasVisitStatus, AtlasVisitCompletion, AtlasVisitReadiness } from './visitLifecycle.types';
 
 // ─── Source app tag ───────────────────────────────────────────────────────────
 
@@ -95,6 +96,25 @@ export interface AtlasPropertyV1 {
 
   /** Lifecycle status of this property record. */
   status: AtlasPropertyStatus;
+
+  /**
+   * Canonical visit lifecycle status.
+   * Represents the stage of the field visit as a domain fact, independent
+   * of UI navigation.
+   */
+  visitStatus: AtlasVisitStatus;
+
+  /**
+   * Lightweight readiness summary consumed by UI layers.
+   * Absent until at least one readiness calculation has been run.
+   */
+  readiness?: AtlasVisitReadiness;
+
+  /**
+   * Completion metadata.
+   * Absent until the visit has been formally completed.
+   */
+  completion?: AtlasVisitCompletion;
 
   /**
    * Monotonically increasing schema revision counter.

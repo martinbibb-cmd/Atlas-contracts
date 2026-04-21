@@ -55,6 +55,7 @@ function minimalProperty(): AtlasPropertyV1 {
     createdAt: '2025-03-01T08:00:00Z',
     updatedAt: '2025-03-01T08:00:00Z',
     status: 'draft',
+    visitStatus: 'draft',
     sourceApps: ['atlas_scan'],
     property: {},
     capture: { sessionId: 'rt-session-001' },
