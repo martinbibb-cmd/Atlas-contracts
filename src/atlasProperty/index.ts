@@ -100,3 +100,13 @@ export type {
   AtlasPropertyV1,
   UnknownAtlasProperty,
 } from './atlasProperty.types';
+
+// ─── Visit lifecycle ──────────────────────────────────────────────────────────
+
+export type {
+  AtlasVisitStatus,
+  AtlasVisitCompletion,
+  AtlasVisitReadiness,
+} from './visitLifecycle.types';
+
+export { ATLAS_VISIT_STATUS_TRANSITIONS } from './visitLifecycle.types';
