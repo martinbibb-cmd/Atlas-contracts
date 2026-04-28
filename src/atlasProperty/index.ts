@@ -100,3 +100,27 @@ export type {
   AtlasPropertyV1,
   UnknownAtlasProperty,
 } from './atlasProperty.types';
+
+// ─── Visit lifecycle ──────────────────────────────────────────────────────────
+
+export type {
+  AtlasVisitStatus,
+  AtlasVisitCompletion,
+  AtlasVisitReadiness,
+} from './visitLifecycle.types';
+
+export { ATLAS_VISIT_STATUS_TRANSITIONS } from './visitLifecycle.types';
+
+// ─── Field survey ─────────────────────────────────────────────────────────────
+
+export type {
+  AtlasRoomLiteV1,
+  AtlasPhotoEvidenceV1,
+  AtlasKeyObjectType,
+  AtlasKeyObjectV1,
+  AtlasVisitNotesV1,
+  AtlasSystemPresenceV1,
+  AtlasFieldSurveyV1,
+} from './fieldSurvey.types';
+
+export { deriveVisitReadinessFromFieldSurvey } from './fieldSurvey.helpers';

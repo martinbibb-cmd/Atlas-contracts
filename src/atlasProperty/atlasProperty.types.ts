@@ -31,6 +31,8 @@ import type { CurrentSystemModelV1 } from './currentSystem.types';
 import type { EvidenceModelV1 } from './evidence.types';
 import type { DerivedModelV1 } from './derived.types';
 import type { RecommendationWorkspaceV1 } from './recommendations.types';
+import type { AtlasVisitStatus, AtlasVisitCompletion, AtlasVisitReadiness } from './visitLifecycle.types';
+import type { AtlasFieldSurveyV1 } from './fieldSurvey.types';
 
 // ─── Source app tag ───────────────────────────────────────────────────────────
 
@@ -97,6 +99,25 @@ export interface AtlasPropertyV1 {
   status: AtlasPropertyStatus;
 
   /**
+   * Canonical visit lifecycle status.
+   * Represents the stage of the field visit as a domain fact, independent
+   * of UI navigation.
+   */
+  visitStatus: AtlasVisitStatus;
+
+  /**
+   * Lightweight readiness summary consumed by UI layers.
+   * Absent until at least one readiness calculation has been run.
+   */
+  readiness?: AtlasVisitReadiness;
+
+  /**
+   * Completion metadata.
+   * Absent until the visit has been formally completed.
+   */
+  completion?: AtlasVisitCompletion;
+
+  /**
    * Monotonically increasing schema revision counter.
    * Incremented by any app each time it writes a structural change to the record.
    * Can be used for optimistic-concurrency conflict detection.
@@ -141,6 +162,14 @@ export interface AtlasPropertyV1 {
    * Absent until the recommendation engine has run.
    */
   recommendations?: RecommendationWorkspaceV1;
+
+  /**
+   * Minimal field survey data captured during the visit.
+   * Groups rooms, photos, key objects, notes, and system presence
+   * under a single optional container, keeping the root contract tidy.
+   * Absent until at least one field survey capture has been written.
+   */
+  fieldSurvey?: AtlasFieldSurveyV1;
 }
 
 /**
