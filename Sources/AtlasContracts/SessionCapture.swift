@@ -437,23 +437,35 @@ public struct SessionDeviceV1: Codable, Sendable, Equatable {
 /// describes what was captured (rooms, objects, photos, audio, note markers,
 /// and a timeline of events) without encoding any UI-specific concepts.
 ///
-/// - `version`:     contract version string; always `"1.0"`.
-/// - `sessionId`:   unique identifier for this session (UUID string).
-/// - `startedAt`:   ISO-8601 timestamp of session start.
-/// - `updatedAt`:   ISO-8601 timestamp of last update.
-/// - `completedAt`: ISO-8601 timestamp of session completion (absent if active).
-/// - `status`:      current lifecycle status of the session.
-/// - `property`:    optional property address information.
-/// - `rooms`:       rooms visited during the session.
-/// - `objects`:     captured system objects (radiators, boilers, etc.).
-/// - `photos`:      photos taken as evidence.
-/// - `audio`:       continuous audio capture data.
-/// - `notes`:       timestamped note markers placed during the session.
-/// - `events`:      ordered timeline event stream (enables replay / debugging).
-/// - `device`:      optional device and app metadata.
+/// - `version`:         contract version string; always `"1.0"`.
+/// - `sessionId`:       unique identifier for this session (UUID string).
+/// - `appointmentId`:   authoritative cross-system appointment key.  Must match
+///                      `AppointmentV1.appointmentId` for the appointment that
+///                      triggered this visit.  Required — Atlas Scan iOS must
+///                      always capture the appointment reference before starting
+///                      a session so the resulting payload can be matched back
+///                      by Atlas Recommendation.
+/// - `startedAt`:       ISO-8601 timestamp of session start.
+/// - `updatedAt`:       ISO-8601 timestamp of last update.
+/// - `completedAt`:     ISO-8601 timestamp of session completion (absent if active).
+/// - `status`:          current lifecycle status of the session.
+/// - `property`:        optional property address information.
+/// - `rooms`:           rooms visited during the session.
+/// - `objects`:         captured system objects (radiators, boilers, etc.).
+/// - `photos`:          photos taken as evidence.
+/// - `audio`:           continuous audio capture data.
+/// - `notes`:           timestamped note markers placed during the session.
+/// - `events`:          ordered timeline event stream (enables replay / debugging).
+/// - `device`:          optional device and app metadata.
 public struct SessionCaptureV1: Codable, Sendable, Equatable {
     public let version: String
     public let sessionId: String
+    /// Authoritative cross-system appointment key.
+    ///
+    /// Must match `AppointmentV1.appointmentId` for the appointment that
+    /// triggered this visit.  Atlas Recommendation uses this field to associate
+    /// the submitted session capture with the correct appointment record.
+    public let appointmentId: String
     public let startedAt: String
     public let updatedAt: String
     public let completedAt: String?
@@ -470,6 +482,7 @@ public struct SessionCaptureV1: Codable, Sendable, Equatable {
     public init(
         version: String = "1.0",
         sessionId: String,
+        appointmentId: String,
         startedAt: String,
         updatedAt: String,
         completedAt: String? = nil,
@@ -485,6 +498,7 @@ public struct SessionCaptureV1: Codable, Sendable, Equatable {
     ) {
         self.version = version
         self.sessionId = sessionId
+        self.appointmentId = appointmentId
         self.startedAt = startedAt
         self.updatedAt = updatedAt
         self.completedAt = completedAt

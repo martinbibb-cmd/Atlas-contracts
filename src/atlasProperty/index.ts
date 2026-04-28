@@ -125,6 +125,14 @@ export type {
 
 export { deriveVisitReadinessFromFieldSurvey } from './fieldSurvey.helpers';
 
+// ─── Appointment ─────────────────────────────────────────────────────────────
+
+export type {
+  AtlasAppointmentStatus,
+  AtlasAppointmentV1,
+  UnknownAtlasAppointment,
+} from './appointment.types';
+
 // ─── Planning overlay ─────────────────────────────────────────────────────────
 
 export type {
