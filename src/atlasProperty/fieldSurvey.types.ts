@@ -95,6 +95,8 @@ export type AtlasKeyObjectType =
   | 'radiator'
   | 'hot_water_tank'
   | 'consumer_unit'
+  | 'electric_meter'
+  | 'gas_meter'
   | 'meter'
   | 'other';
 

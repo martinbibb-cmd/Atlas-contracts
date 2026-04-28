@@ -124,3 +124,17 @@ export type {
 } from './fieldSurvey.types';
 
 export { deriveVisitReadinessFromFieldSurvey } from './fieldSurvey.helpers';
+
+// ─── Planning overlay ─────────────────────────────────────────────────────────
+
+export type {
+  AtlasEmitterType,
+  AtlasProposedEmitterV1,
+  AtlasRoomPlanNoteV1,
+  AtlasRouteMarkupV1,
+  AtlasAccessNoteV1,
+  AtlasPlanningOverlayV1,
+  AtlasPlanningReadiness,
+} from './planningOverlay.types';
+
+export { derivePlanningReadiness } from './planningOverlay.types';

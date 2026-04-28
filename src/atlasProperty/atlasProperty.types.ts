@@ -33,6 +33,7 @@ import type { DerivedModelV1 } from './derived.types';
 import type { RecommendationWorkspaceV1 } from './recommendations.types';
 import type { AtlasVisitStatus, AtlasVisitCompletion, AtlasVisitReadiness } from './visitLifecycle.types';
 import type { AtlasFieldSurveyV1 } from './fieldSurvey.types';
+import type { AtlasPlanningOverlayV1 } from './planningOverlay.types';
 
 // ─── Source app tag ───────────────────────────────────────────────────────────
 
@@ -170,6 +171,13 @@ export interface AtlasPropertyV1 {
    * Absent until at least one field survey capture has been written.
    */
   fieldSurvey?: AtlasFieldSurveyV1;
+
+  /**
+   * Planning overlay — proposed changes and install markup.
+   * Absent until planning data has been entered for this property.
+   * Must not modify captured data in `building` or `currentSystem`.
+   */
+  planningOverlay?: AtlasPlanningOverlayV1;
 }
 
 /**
