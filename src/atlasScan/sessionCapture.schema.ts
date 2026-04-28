@@ -170,6 +170,10 @@ export function validateSessionCaptureV2(
     return { ok: false, error: 'job.visitReference must be a non-empty string' };
   }
 
+  if (!isNonEmptyString((input['job'] as Record<string, unknown>)['appointmentId'])) {
+    return { ok: false, error: 'job.appointmentId must be a non-empty string' };
+  }
+
   if (!isRecord(input['captures'])) {
     return { ok: false, error: 'captures must be an object' };
   }

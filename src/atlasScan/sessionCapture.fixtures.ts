@@ -97,6 +97,7 @@ export function buildSessionCaptureV2(
     createdAt: '2025-06-01T09:00:00Z',
     updatedAt: '2025-06-01T10:00:00Z',
     job: {
+      appointmentId: 'appt-fixture-001',
       visitReference: 'JOB-2025-0601',
     },
     device: {
@@ -128,6 +129,7 @@ export function buildMinimalSessionCaptureV2(
     createdAt: '2025-06-01T09:00:00Z',
     updatedAt: '2025-06-01T09:00:00Z',
     job: {
+      appointmentId: 'appt-minimal-001',
       visitReference: 'JOB-2025-0601',
     },
     captures: {

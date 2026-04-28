@@ -84,6 +84,26 @@ export type {
 
 export * from './atlasProperty/index';
 
+// ─── AtlasScan session capture V2 ─────────────────────────────────────────────
+
+export type {
+  CapturedPointRef,
+  CapturedRoomScan,
+  CapturedPhoto,
+  CapturedVoiceNote,
+  CapturedPlacedObject,
+  CapturedFloorPlanSnapshot,
+  SessionCaptureV2,
+  UnknownSessionCaptureV2,
+} from './atlasScan/sessionCapture.types';
+
+export { validateSessionCaptureV2 } from './atlasScan/sessionCapture.schema';
+export type {
+  SessionCaptureV2ValidationResult,
+  SessionCaptureV2ValidationSuccess,
+  SessionCaptureV2ValidationFailure,
+} from './atlasScan/sessionCapture.schema';
+
 // ─── Spatial alignment module ─────────────────────────────────────────────────
 
 export type {

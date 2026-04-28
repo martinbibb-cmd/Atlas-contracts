@@ -340,6 +340,7 @@ final class AtlasContractsTests: XCTestCase {
         let session = try JSONDecoder().decode(SessionCaptureV1.self, from: data)
         XCTAssertEqual(session.version, "1.0")
         XCTAssertEqual(session.sessionId, "session-fixture-001")
+        XCTAssertEqual(session.appointmentId, "appt-fixture-swift-001")
         XCTAssertEqual(session.status, .ready)
         XCTAssertEqual(session.completedAt, "2025-06-01T09:45:00Z")
         XCTAssertEqual(session.rooms.count, 2)
@@ -437,12 +438,14 @@ final class AtlasContractsTests: XCTestCase {
     func testSessionCaptureDefaultInit() {
         let session = SessionCaptureV1(
             sessionId: "test-session",
+            appointmentId: "appt-test-001",
             startedAt: "2025-06-01T09:00:00Z",
             updatedAt: "2025-06-01T09:00:00Z",
             status: .active
         )
         XCTAssertEqual(session.version, "1.0")
         XCTAssertEqual(session.sessionId, "test-session")
+        XCTAssertEqual(session.appointmentId, "appt-test-001")
         XCTAssertEqual(session.status, .active)
         XCTAssertNil(session.completedAt)
         XCTAssertNil(session.property)
@@ -873,6 +876,7 @@ private let validSessionCaptureJSON = """
 {
   "version": "1.0",
   "sessionId": "session-fixture-001",
+  "appointmentId": "appt-fixture-swift-001",
   "startedAt": "2025-06-01T09:00:00Z",
   "updatedAt": "2025-06-01T09:45:00Z",
   "completedAt": "2025-06-01T09:45:00Z",

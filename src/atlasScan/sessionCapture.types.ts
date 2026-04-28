@@ -201,7 +201,20 @@ export interface SessionCaptureV2 {
 
   /** Job / visit reference metadata. */
   job: {
-    /** External visit or job reference identifier. */
+    /**
+     * Unique appointment identifier.
+     *
+     * Must match `AtlasAppointmentV1.appointmentId` for the appointment that
+     * triggered this visit.  This is the authoritative cross-system key that
+     * links the capture back to the appointment created by Atlas Recommendation.
+     */
+    appointmentId: string;
+    /**
+     * Human-readable visit or job reference string (e.g. "JOB-2025-0601").
+     *
+     * Used for display purposes only.  For programmatic lookups, use
+     * `appointmentId`.
+     */
     visitReference: string;
   };
 

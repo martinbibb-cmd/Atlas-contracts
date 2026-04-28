@@ -19,6 +19,8 @@
  *  13. Invalid placedObject createdAt rejected
  *  14. Invalid floorPlanSnapshot rejected
  *  15. TypeScript narrowing: session is typed as SessionCaptureV2 after ok: true
+ *  16. job.appointmentId present in the full fixture
+ *  17. Missing job.appointmentId rejected
  */
 
 import { describe, it, expect } from 'vitest';
@@ -312,5 +314,47 @@ describe('validateSessionCaptureV2 — TypeScript narrowing', () => {
     // If this compiles, the type narrowing is working
     const session: SessionCaptureV2 = result.session;
     expect(session.schemaVersion).toBe('atlas.scan.session.v2');
+  });
+});
+
+// ─── 16. job.appointmentId — presence and validation ─────────────────────────
+
+describe('validateSessionCaptureV2 — job.appointmentId present in full fixture', () => {
+  it('returns the correct appointmentId', () => {
+    const result = validateSessionCaptureV2(buildSessionCaptureV2());
+    if (!result.ok) throw new Error('Expected ok: true');
+    expect(result.session.job.appointmentId).toBe('appt-fixture-001');
+  });
+
+  it('returns the correct visitReference alongside appointmentId', () => {
+    const result = validateSessionCaptureV2(buildSessionCaptureV2());
+    if (!result.ok) throw new Error('Expected ok: true');
+    expect(result.session.job.visitReference).toBe('JOB-2025-0601');
+  });
+});
+
+// ─── 17. Missing job.appointmentId ───────────────────────────────────────────
+
+describe('validateSessionCaptureV2 — missing job.appointmentId', () => {
+  it('returns ok: false when appointmentId is absent', () => {
+    const input = {
+      ...buildSessionCaptureV2(),
+      job: { visitReference: 'JOB-2025-0601' },
+    };
+    const result = validateSessionCaptureV2(input);
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected ok: false');
+    expect(result.error).toMatch(/appointmentId/);
+  });
+
+  it('returns ok: false when appointmentId is an empty string', () => {
+    const input = {
+      ...buildSessionCaptureV2(),
+      job: { visitReference: 'JOB-2025-0601', appointmentId: '' },
+    };
+    const result = validateSessionCaptureV2(input);
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected ok: false');
+    expect(result.error).toMatch(/appointmentId/);
   });
 });
