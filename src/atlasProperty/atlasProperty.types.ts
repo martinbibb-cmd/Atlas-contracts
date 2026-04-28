@@ -32,6 +32,7 @@ import type { EvidenceModelV1 } from './evidence.types';
 import type { DerivedModelV1 } from './derived.types';
 import type { RecommendationWorkspaceV1 } from './recommendations.types';
 import type { AtlasVisitStatus, AtlasVisitCompletion, AtlasVisitReadiness } from './visitLifecycle.types';
+import type { AtlasFieldSurveyV1 } from './fieldSurvey.types';
 import type { AtlasPlanningOverlayV1 } from './planningOverlay.types';
 
 // ─── Source app tag ───────────────────────────────────────────────────────────
@@ -162,6 +163,14 @@ export interface AtlasPropertyV1 {
    * Absent until the recommendation engine has run.
    */
   recommendations?: RecommendationWorkspaceV1;
+
+  /**
+   * Minimal field survey data captured during the visit.
+   * Groups rooms, photos, key objects, notes, and system presence
+   * under a single optional container, keeping the root contract tidy.
+   * Absent until at least one field survey capture has been written.
+   */
+  fieldSurvey?: AtlasFieldSurveyV1;
 
   /**
    * Planning overlay — proposed changes and install markup.

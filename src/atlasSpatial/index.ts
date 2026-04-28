@@ -78,7 +78,7 @@ export { validateAtlasSpatialPatch } from './atlasSpatialPatch.schema';
 // ─── Spatial alignment types ──────────────────────────────────────────────────
 
 export type {
-  AtlasKeyObjectType,
+  AtlasAnchorObjectType,
   AtlasWorldPosition,
   AtlasAnchor,
   AtlasVerticalRelation,

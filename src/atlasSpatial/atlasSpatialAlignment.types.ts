@@ -19,7 +19,7 @@
 
 import type { Point3D } from './atlasGeometry.types';
 
-// ─── Key object type ──────────────────────────────────────────────────────────
+// ─── Anchor object type ───────────────────────────────────────────────────────
 
 /**
  * Semantic type of a named key object used as a spatial anchor.
@@ -27,8 +27,11 @@ import type { Point3D } from './atlasGeometry.types';
  * These are the recognisable fixed plant items and services endpoints that
  * surveyors identify and place during a field visit.  The list is intentionally
  * compact — edge cases should use 'other'.
+ *
+ * Note: for general field-survey object capture see `AtlasKeyObjectType` in
+ * `fieldSurvey.types`.  This type is specific to spatial anchor placement.
  */
-export type AtlasKeyObjectType =
+export type AtlasAnchorObjectType =
   | 'boiler'
   | 'heat_pump'
   | 'cylinder'
@@ -80,7 +83,7 @@ export interface AtlasAnchor {
   /** Human-readable display name. */
   label: string;
   /** Semantic type of the object this anchor represents. */
-  objectType?: AtlasKeyObjectType;
+  objectType?: AtlasAnchorObjectType;
   /** Absolute world position of this anchor. */
   worldPosition: AtlasWorldPosition;
   /** ID of the `AtlasSpatialEntityV1` this anchor represents, if any. */

@@ -91,7 +91,7 @@ export type {
   AtlasAnchor,
   AtlasVerticalRelation,
   AtlasInferredRoute,
-  AtlasKeyObjectType,
+  AtlasAnchorObjectType,
 } from './atlasSpatial/atlasSpatialAlignment.types';
 
 export type {

@@ -21,8 +21,6 @@
  *   1.0 — initial introduction
  */
 
-import type { AtlasPropertyV1 } from './atlasProperty.types';
-
 // ─── Emitter type ─────────────────────────────────────────────────────────────
 
 /**
@@ -211,7 +209,7 @@ export interface AtlasPlanningReadiness {
  * @returns AtlasPlanningReadiness
  */
 export function derivePlanningReadiness(
-  property: Pick<AtlasPropertyV1, 'planningOverlay'>,
+  property: { planningOverlay?: AtlasPlanningOverlayV1 },
 ): AtlasPlanningReadiness {
   const overlay = property.planningOverlay;
   return {

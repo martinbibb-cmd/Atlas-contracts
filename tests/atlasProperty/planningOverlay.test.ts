@@ -13,7 +13,8 @@
  *   7. derivePlanningReadiness returns all-false for empty overlay
  *   8. derivePlanningReadiness returns correct flags for populated overlay
  *   9. AtlasPropertyV1 accepts planningOverlay as optional field
- *  10. AtlasKeyObjectType includes electric_meter and gas_meter
+ *  10. AtlasKeyObjectType (fieldSurvey) includes electric_meter and gas_meter
+ *  11. AtlasAnchorObjectType (spatial alignment) includes electric_meter and gas_meter
  */
 
 import { describe, it, expect } from 'vitest';
@@ -26,9 +27,10 @@ import type {
   AtlasPlanningOverlayV1,
   AtlasPlanningReadiness,
   AtlasPropertyV1,
+  AtlasKeyObjectType,
 } from '../../src/atlasProperty/index';
 import { derivePlanningReadiness } from '../../src/atlasProperty/index';
-import type { AtlasKeyObjectType } from '../../src/atlasSpatial/atlasSpatialAlignment.types';
+import type { AtlasAnchorObjectType } from '../../src/atlasSpatial/atlasSpatialAlignment.types';
 
 // ─── Minimal property helper ──────────────────────────────────────────────────
 
@@ -436,10 +438,43 @@ describe('AtlasPropertyV1 — planningOverlay is optional', () => {
   });
 });
 
-// ─── 10. AtlasKeyObjectType includes electric_meter and gas_meter ─────────────
+// ─── 10. AtlasKeyObjectType (fieldSurvey) includes electric_meter and gas_meter ─
 
-describe('AtlasKeyObjectType', () => {
+describe('AtlasKeyObjectType — fieldSurvey capture objects', () => {
   const keyObjectTypes: AtlasKeyObjectType[] = [
+    'boiler',
+    'flue',
+    'cylinder',
+    'radiator',
+    'hot_water_tank',
+    'consumer_unit',
+    'electric_meter',
+    'gas_meter',
+    'meter',
+    'other',
+  ];
+
+  it('all expected key object types are assignable', () => {
+    expect(keyObjectTypes).toContain('electric_meter');
+    expect(keyObjectTypes).toContain('gas_meter');
+    expect(keyObjectTypes).toHaveLength(10);
+  });
+
+  it('electric_meter is a valid AtlasKeyObjectType', () => {
+    const t: AtlasKeyObjectType = 'electric_meter';
+    expect(t).toBe('electric_meter');
+  });
+
+  it('gas_meter is a valid AtlasKeyObjectType', () => {
+    const t: AtlasKeyObjectType = 'gas_meter';
+    expect(t).toBe('gas_meter');
+  });
+});
+
+// ─── 11. AtlasAnchorObjectType (spatial alignment) includes electric_meter / gas_meter ─
+
+describe('AtlasAnchorObjectType — spatial anchor classification', () => {
+  const anchorObjectTypes: AtlasAnchorObjectType[] = [
     'boiler',
     'heat_pump',
     'cylinder',
@@ -451,19 +486,19 @@ describe('AtlasKeyObjectType', () => {
     'other',
   ];
 
-  it('all expected key object types are assignable', () => {
-    expect(keyObjectTypes).toContain('electric_meter');
-    expect(keyObjectTypes).toContain('gas_meter');
-    expect(keyObjectTypes).toHaveLength(9);
+  it('all expected anchor object types are assignable', () => {
+    expect(anchorObjectTypes).toContain('electric_meter');
+    expect(anchorObjectTypes).toContain('gas_meter');
+    expect(anchorObjectTypes).toHaveLength(9);
   });
 
-  it('electric_meter is a valid AtlasKeyObjectType', () => {
-    const t: AtlasKeyObjectType = 'electric_meter';
+  it('electric_meter is a valid AtlasAnchorObjectType', () => {
+    const t: AtlasAnchorObjectType = 'electric_meter';
     expect(t).toBe('electric_meter');
   });
 
-  it('gas_meter is a valid AtlasKeyObjectType', () => {
-    const t: AtlasKeyObjectType = 'gas_meter';
+  it('gas_meter is a valid AtlasAnchorObjectType', () => {
+    const t: AtlasAnchorObjectType = 'gas_meter';
     expect(t).toBe('gas_meter');
   });
 });
