@@ -95,7 +95,12 @@ const QA_FLAG_KINDS = new Set([
   'other',
 ]);
 
-/** Raw audio field names that are forbidden in voice note objects. */
+/**
+ * Raw audio field names that are forbidden in voice note objects.
+ *
+ * Both `audioUri` and `audioUrl` are listed defensively to cover naming
+ * variations that may appear in pre-release Atlas Scan builds.
+ */
 const RAW_AUDIO_FIELDS = ['audioUri', 'audioRef', 'audioData', 'audioUrl', 'audioFile'];
 
 // ─── Sub-validators ───────────────────────────────────────────────────────────
