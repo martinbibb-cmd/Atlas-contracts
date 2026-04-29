@@ -3,49 +3,25 @@
  *
  * Public surface of the @atlas/contracts scan module.
  *
- * Re-exports everything callers need:
- *   - all scan entity types
- *   - version constants and helpers
- *   - validation functions and result types
+ * Canonical scan handoff contract:
+ *   SessionCaptureV1 — defined in src/atlasScan/sessionCaptureV1.types.ts
+ *
+ * This module exports:
+ *   - Spatial primitives (ScanPoint2D, ScanPoint3D, ScanCoordinateConvention)
+ *   - Scan import conflict types (ScanImportConflictSetV1, etc.)
+ *   - Install markup models (InstallObjectModelV1, InstallRouteModelV1, etc.)
+ *   - Install markup validators
+ *   - AtlasProperty version check
  */
 
 export type {
   ScanCoordinateConvention,
-  ScanConfidenceBand,
-  ScanQAFlag,
   ScanPoint2D,
   ScanPoint3D,
-  ScanOpening,
-  ScanWall,
-  ScanDetectedObject,
-  ScanAnchor,
-  ScanRoom,
-  ScanMeta,
-  ScanBundleV1,
-  ScanBundle,
-  UnknownScanBundle,
-  VoiceNoteKind,
-  TranscriptStatus,
-  VoiceNoteSyncState,
-  VoiceNote,
-  VisitCapture,
-  SessionStatusV1,
-  RoomStatusV1,
-  CapturedObjectType,
-  AnchorConfidence,
-  CapturedObjectStatus,
-  PhotoScope,
-  NoteMarkerCategory,
-  SessionEventType,
-  RoomV1,
-  ObjectV1,
-  PhotoV1,
-  AudioSegmentV1,
-  AudioV1,
-  NoteMarkerV1,
-  SessionEventV1,
-  SessionCaptureV1,
-  UnknownSessionCapture,
+  ScanImportConflictKind,
+  ScanImportConflictFieldV1,
+  ScanImportConflictItemV1,
+  ScanImportConflictSetV1,
   InstallObjectType,
   InstallObjectSource,
   InstallDimensions,
@@ -60,17 +36,10 @@ export type {
   InstallLayerModelV1,
 } from './types';
 
-export { SUPPORTED_SCAN_BUNDLE_VERSIONS, isSupportedVersion, isUnsupportedVersion } from './versions';
-export type { ScanBundleVersion } from './versions';
-
-export { validateScanBundle, validateSessionCapture, validateInstallObject, validateInstallRoute, validateInstallLayer } from './validation';
+export { checkAtlasPropertyVersion, CURRENT_ATLAS_PROPERTY_VERSION } from './validation';
 export type {
-  ScanValidationResult,
-  ScanValidationSuccess,
-  ScanValidationFailure,
-  SessionCaptureValidationResult,
-  SessionCaptureValidationSuccess,
-  SessionCaptureValidationFailure,
+  AtlasPropertyVersionStatus,
+  AtlasPropertyVersionCheckResult,
   InstallObjectValidationResult,
   InstallObjectValidationSuccess,
   InstallObjectValidationFailure,
@@ -81,3 +50,5 @@ export type {
   InstallLayerValidationSuccess,
   InstallLayerValidationFailure,
 } from './validation';
+
+export { validateInstallObject, validateInstallRoute, validateInstallLayer } from './validation';

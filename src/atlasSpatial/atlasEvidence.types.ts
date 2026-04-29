@@ -3,9 +3,15 @@
  *
  * AtlasEvidenceMarkerV1 — a spatial evidence marker attached to a spatial model.
  *
- * Evidence markers link raw capture artefacts (photos, voice notes, scan
- * bundles) to spatial entities in the model, providing a traceable chain from
- * observation to semantic truth.
+ * Evidence markers link raw capture artefacts (photos, transcript segments,
+ * room scans) to spatial entities in the model, providing a traceable chain
+ * from observation to semantic truth.
+ *
+ * Source IDs reference entries in the SessionCaptureV1 that was imported:
+ *   - photo    → SessionPhotoV1.photoId
+ *   - voice_note → TranscriptSegmentV1.segmentId
+ *   - room_scan  → SessionRoomV1.roomId
+ *   - placed_object → ObjectMarkerV1.markerId
  */
 
 // ─── Evidence source reference ────────────────────────────────────────────────
@@ -15,25 +21,25 @@
  */
 export type AtlasEvidenceSourceRef =
   | {
-      /** Reference to a CapturedPhoto by ID. */
+      /** Reference to a SessionPhotoV1 by photoId. */
       type: 'photo';
       captureId: string;
       sessionId?: string;
     }
   | {
-      /** Reference to a CapturedVoiceNote by ID. */
+      /** Reference to a TranscriptSegmentV1 by segmentId. */
       type: 'voice_note';
       captureId: string;
       sessionId?: string;
     }
   | {
-      /** Reference to a CapturedRoomScan by ID. */
+      /** Reference to a SessionRoomV1 by roomId. */
       type: 'room_scan';
       captureId: string;
       sessionId?: string;
     }
   | {
-      /** Reference to a CapturedPlacedObject by ID. */
+      /** Reference to an ObjectMarkerV1 by markerId. */
       type: 'placed_object';
       captureId: string;
       sessionId?: string;

@@ -3,106 +3,99 @@
  *
  * Top-level public surface of the @atlas/contracts package.
  *
- * Re-exports all versioned contracts:
- *   - scan module        (ScanBundleV1, VisitCapture, SessionCaptureV1, …)
- *   - atlasProperty module (AtlasPropertyV1 and all sub-models)
+ * Canonical scan handoff contract:
+ *   SessionCaptureV1 — the only supported contract between Atlas Scan and
+ *   Atlas Mind.  Import from '@atlas/contracts' or directly from
+ *   '@atlas/contracts/scan'.
  *
- * Note: consumers that want to import a specific module directly should use
- * the dedicated export paths:
- *   @atlas/contracts/scan
- *   @atlas/contracts/atlasProperty
+ * Re-exports:
+ *   - SessionCaptureV1 types and validator          (atlasScan module)
+ *   - Spatial primitives and install markup types   (scan module)
+ *   - AtlasPropertyV1 and all sub-models            (atlasProperty module)
+ *   - AtlasSpatial alignment types and engine       (atlasSpatial module)
  */
 
-// ─── Scan module ──────────────────────────────────────────────────────────────
-// Re-export the scan module types, renaming the SessionCaptureV1 RoomV1 to
-// SessionRoomV1 at this aggregated boundary to avoid ambiguity with the
-// building model's RoomV1.
+// ─── Canonical scan handoff contract: SessionCaptureV1 ───────────────────────
+
+export type {
+  SpatialConfidence,
+  EvidenceProvenanceV1,
+  SessionCaptureStatus,
+  RoomCaptureStatus,
+  SessionRoomV1,
+  SpatialRoomGeometryV1,
+  SpatialModelV1,
+  ObjectMarkerKind,
+  ObjectMarkerV1,
+  SessionPhotoV1,
+  TranscriptSegmentV1,
+  TranscriptV1,
+  NoteCategoryV1,
+  SessionNoteV1,
+  TimelineEventType,
+  TimelineEventV1,
+  AssetKindV1,
+  AssetManifestEntryV1,
+  DeviceMetadataV1,
+  ReviewStatus,
+  ReviewStateV1,
+  SessionCaptureV1,
+  UnknownSessionCaptureV1,
+} from './atlasScan/sessionCaptureV1.types';
+
+export { validateSessionCaptureV1 } from './atlasScan/sessionCaptureV1.schema';
+export type {
+  SessionCaptureV1ValidationResult,
+  SessionCaptureV1ValidationSuccess,
+  SessionCaptureV1ValidationFailure,
+} from './atlasScan/sessionCaptureV1.schema';
+
+// ─── Scan module (spatial primitives, install markup, property version) ───────
 
 export type {
   ScanCoordinateConvention,
-  ScanConfidenceBand,
-  ScanQAFlag,
   ScanPoint2D,
   ScanPoint3D,
-  ScanOpening,
-  ScanWall,
-  ScanDetectedObject,
-  ScanAnchor,
-  ScanRoom,
-  ScanMeta,
-  ScanBundleV1,
-  ScanBundle,
-  UnknownScanBundle,
-  VoiceNoteKind,
-  TranscriptStatus,
-  VoiceNoteSyncState,
-  VoiceNote,
-  VisitCapture,
-  SessionStatusV1,
-  RoomStatusV1,
-  CapturedObjectType,
-  AnchorConfidence,
-  CapturedObjectStatus,
-  PhotoScope,
-  NoteMarkerCategory,
-  SessionEventType,
-  RoomV1 as SessionRoomV1,
-  ObjectV1,
-  PhotoV1,
-  AudioSegmentV1,
-  AudioV1,
-  NoteMarkerV1,
-  SessionEventV1,
-  SessionCaptureV1,
-  UnknownSessionCapture,
   ScanImportConflictKind,
   ScanImportConflictFieldV1,
   ScanImportConflictItemV1,
   ScanImportConflictSetV1,
+  InstallObjectType,
+  InstallObjectSource,
+  InstallDimensions,
+  InstallOrientation,
+  InstallObjectModelV1,
+  InstallRouteKind,
+  InstallMounting,
+  InstallRouteConfidence,
+  InstallPathPoint,
+  InstallRouteModelV1,
+  InstallAnnotation,
+  InstallLayerModelV1,
 } from './scan/types';
 
-export {
-  SUPPORTED_SCAN_BUNDLE_VERSIONS,
-  isSupportedVersion,
-  isUnsupportedVersion,
-} from './scan/versions';
-export type { ScanBundleVersion } from './scan/versions';
-
-export { validateScanBundle, validateSessionCapture, checkAtlasPropertyVersion, CURRENT_ATLAS_PROPERTY_VERSION } from './scan/validation';
+export { checkAtlasPropertyVersion, CURRENT_ATLAS_PROPERTY_VERSION } from './scan/validation';
 export type {
-  ScanValidationResult,
-  ScanValidationSuccess,
-  ScanValidationFailure,
-  SessionCaptureValidationResult,
-  SessionCaptureValidationSuccess,
-  SessionCaptureValidationFailure,
   AtlasPropertyVersionStatus,
   AtlasPropertyVersionCheckResult,
+} from './scan/validation';
+
+export { validateInstallObject, validateInstallRoute, validateInstallLayer } from './scan/validation';
+export type {
+  InstallObjectValidationResult,
+  InstallObjectValidationSuccess,
+  InstallObjectValidationFailure,
+  InstallRouteValidationResult,
+  InstallRouteValidationSuccess,
+  InstallRouteValidationFailure,
+  InstallLayerValidationResult,
+  InstallLayerValidationSuccess,
+  InstallLayerValidationFailure,
 } from './scan/validation';
 
 // ─── AtlasProperty module ─────────────────────────────────────────────────────
 
 export * from './atlasProperty/index';
-
-// ─── AtlasScan session capture V2 ─────────────────────────────────────────────
-
-export type {
-  CapturedPointRef,
-  CapturedRoomScan,
-  CapturedPhoto,
-  CapturedVoiceNote,
-  CapturedPlacedObject,
-  CapturedFloorPlanSnapshot,
-  SessionCaptureV2,
-  UnknownSessionCaptureV2,
-} from './atlasScan/sessionCapture.types';
-
-export { validateSessionCaptureV2 } from './atlasScan/sessionCapture.schema';
-export type {
-  SessionCaptureV2ValidationResult,
-  SessionCaptureV2ValidationSuccess,
-  SessionCaptureV2ValidationFailure,
-} from './atlasScan/sessionCapture.schema';
 
 // ─── Spatial alignment module ─────────────────────────────────────────────────
 

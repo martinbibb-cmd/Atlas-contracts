@@ -1,18 +1,19 @@
 /**
  * buildInitialSpatialModelFromSessionCapture.ts
  *
- * Derives an initial AtlasSpatialModelV1 from a SessionCaptureV2 payload.
+ * Derives an initial AtlasSpatialModelV1 from a SessionCaptureV1 payload.
  *
  * This is the boundary crossing from raw capture (Scan) to editable semantic
  * model (Mind).  The importer:
- *   - Maps room scans → AtlasRoomV1 entities (footprint from raw area/height)
- *   - Maps placed objects → emitter / heat-source / control / asset entities
- *   - Maps photos and voice notes → AtlasEvidenceMarkerV1 entries
+ *   - Maps rooms → AtlasRoomV1 entities (footprint from geometry.rawAreaM2 / rawHeightM)
+ *   - Maps object markers → emitter / heat-source / control / asset entities
+ *   - Maps photos → AtlasEvidenceMarkerV1 entries
+ *   - Maps transcript segments → AtlasEvidenceMarkerV1 entries
  *   - Creates provenance entries for the import event
  *   - Does NOT derive heat-loss values, recommendations, or engine outputs
  */
 
-import type { SessionCaptureV2, CapturedPlacedObject } from '../atlasScan/sessionCapture.types';
+import type { SessionCaptureV1, ObjectMarkerV1 } from '../atlasScan/sessionCaptureV1.types';
 import type {
   AtlasSpatialModelV1,
   AtlasSpatialEntityV1,
@@ -34,6 +35,13 @@ export interface ImportOptions {
   modelId?: string;
   /** ISO-8601 timestamp for the import event. Defaults to now. */
   importedAt?: string;
+  /**
+   * Atlas Mind property ID to associate with the model.
+   *
+   * SessionCaptureV1 carries visitId / sessionId but not a direct propertyId.
+   * Pass the property ID resolved from the visit record in Atlas Mind.
+   */
+  propertyId?: string;
   /** Actor performing the import. Defaults to system/importer. */
   actor?: {
     type: 'user' | 'system';
@@ -58,8 +66,6 @@ function nowIso(): string {
  * also supply their own IDs via `ImportOptions.modelId`.
  */
 function syntheticId(seed: string): string {
-  // Simple deterministic surrogate — not cryptographically random.
-  // Consumers should pass UUIDs via options or replace this with crypto.randomUUID().
   return `atlas-${seed.replace(/[^a-z0-9]/gi, '-').toLowerCase().slice(0, 32)}`;
 }
 
@@ -91,70 +97,67 @@ function roomFootprintFromRaw(rawAreaM2?: number, rawHeightM?: number): RoomFoot
 }
 
 /**
- * Maps a CapturedPlacedObject kind to a spatial entity.
- *
- * Returns the typed entity or null if the kind is not mapped to a first-class
- * entity type (in which case it becomes a generic asset).
+ * Maps an ObjectMarkerV1 to a typed spatial entity.
  */
-function mapPlacedObjectToEntity(
-  obj: CapturedPlacedObject,
+function mapObjectMarkerToEntity(
+  marker: ObjectMarkerV1,
   sessionId: string,
   now: string,
 ): AtlasSpatialEntityV1 {
   const base = {
-    id: obj.id,
-    ...(obj.label !== undefined ? { label: obj.label } : {}),
+    id: marker.markerId,
+    ...(marker.label !== undefined ? { label: marker.label } : {}),
     geometry: {
       kind: 'polygon2d' as const,
-      points: obj.position != null
-        ? [{ x: obj.position.x, y: obj.position.y }]
+      points: marker.position != null
+        ? [{ x: marker.position.x, y: marker.position.y }]
         : [{ x: 0, y: 0 }],
     },
-    semanticRole: obj.kind,
+    semanticRole: marker.kind,
     status: 'existing' as const,
     certainty: 'observed' as const,
     evidenceIds: [],
     sourceSessionId: sessionId,
-    createdAt: obj.createdAt,
+    createdAt: marker.createdAt,
     updatedAt: now,
   };
 
-  if (obj.kind === 'boiler') {
+  if (marker.kind === 'boiler') {
     const entity: AtlasHeatSourcePlacementV1 = {
       ...base,
       kind: 'heat_source',
       type: 'boiler',
-      ...(obj.roomId !== undefined ? { roomId: obj.roomId } : {}),
+      ...(marker.roomId !== undefined ? { roomId: marker.roomId } : {}),
     };
     return entity;
   }
 
-  if (obj.kind === 'cylinder') {
+  if (marker.kind === 'cylinder') {
     const entity: AtlasStorePlacementV1 = {
       ...base,
       kind: 'hot_water_store',
       type: 'vented_cylinder',
-      ...(obj.roomId !== undefined ? { roomId: obj.roomId } : {}),
+      ...(marker.roomId !== undefined ? { roomId: marker.roomId } : {}),
     };
     return entity;
   }
 
-  if (obj.kind === 'radiator') {
+  if (marker.kind === 'radiator') {
     const entity: AtlasEmitterV1 = {
       ...base,
       kind: 'emitter',
       type: 'panel_radiator',
-      roomId: obj.roomId ?? '',
+      roomId: marker.roomId ?? '',
     };
     return entity;
   }
 
-  if (obj.kind === 'control') {
+  if (marker.kind === 'control') {
     const entity: AtlasControlPlacementV1 = {
       ...base,
       kind: 'control',
       type: 'other',
-      ...(obj.roomId !== undefined ? { roomId: obj.roomId } : {}),
+      ...(marker.roomId !== undefined ? { roomId: marker.roomId } : {}),
     };
     return entity;
   }
@@ -163,8 +166,8 @@ function mapPlacedObjectToEntity(
   const asset: AtlasAssetPlacementV1 = {
     ...base,
     kind: 'asset',
-    assetType: obj.kind,
-    ...(obj.roomId !== undefined ? { roomId: obj.roomId } : {}),
+    assetType: marker.kind,
+    ...(marker.roomId !== undefined ? { roomId: marker.roomId } : {}),
   };
   return asset;
 }
@@ -172,45 +175,48 @@ function mapPlacedObjectToEntity(
 // ─── Main function ────────────────────────────────────────────────────────────
 
 /**
- * Builds an initial AtlasSpatialModelV1 from a SessionCaptureV2.
+ * Builds an initial AtlasSpatialModelV1 from a SessionCaptureV1.
  *
  * This is a one-way, lossy-upward conversion: all raw capture data is mapped
- * to semantic entities, but the output model has certainty 'observed' or
- * 'inferred' on every entity.  The Mind editor is expected to review and
- * upgrade certainty values as the model is refined.
+ * to semantic entities with certainty 'observed'.  The Mind editor is expected
+ * to review and upgrade certainty values as the model is refined.
  */
 export function buildInitialSpatialModelFromSessionCapture(
-  capture: SessionCaptureV2,
+  capture: SessionCaptureV1,
   options: ImportOptions = {},
 ): AtlasSpatialModelV1 {
   const now = options.importedAt ?? nowIso();
   const modelId = options.modelId ?? syntheticId(`model-${capture.sessionId}`);
   const actor = options.actor ?? { type: 'system' as const, id: 'importer' };
+  const propertyId = options.propertyId ?? '';
 
-  const rooms: AtlasRoomV1[] = capture.captures.roomScans.map((scan) => ({
-    id: scan.id,
+  const rooms: AtlasRoomV1[] = capture.rooms.map((room) => ({
+    id: room.roomId,
     kind: 'room' as const,
-    ...(scan.label !== undefined ? { label: scan.label } : {}),
-    geometry: roomFootprintFromRaw(scan.rawAreaM2, scan.rawHeightM),
+    ...(room.label !== undefined ? { label: room.label } : {}),
+    geometry: roomFootprintFromRaw(
+      room.geometry?.rawAreaM2,
+      room.geometry?.rawHeightM,
+    ),
     semanticRole: 'room',
     status: 'existing' as const,
     certainty: 'observed' as const,
     evidenceIds: [],
     sourceSessionId: capture.sessionId,
     levelId: 'level-ground',
-    createdAt: scan.capturedAt,
+    createdAt: room.provenance?.capturedAt ?? now,
     updatedAt: now,
   }));
 
-  // Classify placed objects into typed entity arrays
+  // Classify object markers into typed entity arrays
   const emitters: AtlasEmitterV1[] = [];
   const heatSources: AtlasHeatSourcePlacementV1[] = [];
   const hotWaterStores: AtlasStorePlacementV1[] = [];
   const controls: AtlasControlPlacementV1[] = [];
   const assets: AtlasAssetPlacementV1[] = [];
 
-  for (const obj of capture.captures.placedObjects) {
-    const entity = mapPlacedObjectToEntity(obj, capture.sessionId, now);
+  for (const marker of capture.objectMarkers) {
+    const entity = mapObjectMarkerToEntity(marker, capture.sessionId, now);
     if (entity.kind === 'emitter') emitters.push(entity as AtlasEmitterV1);
     else if (entity.kind === 'heat_source') heatSources.push(entity as AtlasHeatSourcePlacementV1);
     else if (entity.kind === 'hot_water_store') hotWaterStores.push(entity as AtlasStorePlacementV1);
@@ -219,33 +225,40 @@ export function buildInitialSpatialModelFromSessionCapture(
   }
 
   // Build evidence markers from photos
+  const photoMarkers: AtlasEvidenceMarkerV1[] = capture.photos.map((photo) => ({
+    id: syntheticId(`ev-photo-${photo.photoId}`),
+    entityId: photo.objectMarkerId ?? photo.roomId ?? 'unlinked',
+    sources: [
+      {
+        type: 'photo' as const,
+        captureId: photo.photoId,
+        sessionId: capture.sessionId,
+      },
+    ],
+    ...(photo.note !== undefined ? { note: photo.note } : {}),
+    createdAt: photo.capturedAt,
+  }));
+
+  // Build evidence markers from transcript segments
+  const transcriptMarkers: AtlasEvidenceMarkerV1[] = (
+    capture.transcript?.segments ?? []
+  ).map((seg) => ({
+    id: syntheticId(`ev-voice-${seg.segmentId}`),
+    entityId: seg.objectMarkerId ?? seg.roomId ?? 'unlinked',
+    sources: [
+      {
+        type: 'voice_note' as const,
+        captureId: seg.segmentId,
+        sessionId: capture.sessionId,
+      },
+    ],
+    note: seg.text.slice(0, 200),
+    createdAt: seg.startedAt,
+  }));
+
   const evidenceMarkers: AtlasEvidenceMarkerV1[] = [
-    ...capture.captures.photos.map((photo) => ({
-      id: syntheticId(`ev-photo-${photo.id}`),
-      entityId: photo.linkedObjectId ?? photo.roomId ?? 'unlinked',
-      sources: [
-        {
-          type: 'photo' as const,
-          captureId: photo.id,
-          sessionId: capture.sessionId,
-        },
-      ],
-      ...(photo.note !== undefined ? { note: photo.note } : {}),
-      createdAt: photo.capturedAt,
-    })),
-    ...capture.captures.voiceNotes.map((note) => ({
-      id: syntheticId(`ev-voice-${note.id}`),
-      entityId: note.linkedObjectId ?? note.roomId ?? 'unlinked',
-      sources: [
-        {
-          type: 'voice_note' as const,
-          captureId: note.id,
-          sessionId: capture.sessionId,
-        },
-      ],
-      note: note.transcript.slice(0, 200),
-      createdAt: note.startedAt,
-    })),
+    ...photoMarkers,
+    ...transcriptMarkers,
   ];
 
   const provenance: AtlasProvenanceEntryV1[] = [
@@ -255,14 +268,14 @@ export function buildInitialSpatialModelFromSessionCapture(
       actor,
       occurredAt: now,
       sourceSessionId: capture.sessionId,
-      description: `Initial import from SessionCaptureV2 session ${capture.sessionId}`,
+      description: `Initial import from SessionCaptureV1 session ${capture.sessionId}`,
     },
   ];
 
   return {
     schemaVersion: 'atlas.spatial.v1',
     modelId,
-    propertyId: capture.propertyId ?? '',
+    propertyId,
     sourceSessionId: capture.sessionId,
     coordinateSystem: {
       kind: 'metric_m_yup',

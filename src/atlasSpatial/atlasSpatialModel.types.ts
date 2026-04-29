@@ -324,7 +324,7 @@ export type AtlasSpatialEntityV1 =
  * This is the canonical editable truth used by Atlas Mind.  It is:
  *   - NOT the scene graph (no USDZ, RealityKit, Three.js)
  *   - NOT the engine output (no heat-loss results, no recommendation scores)
- *   - NOT the capture payload (SessionCaptureV2 is the raw capture)
+ *   - NOT the capture payload (SessionCaptureV1 is the raw capture)
  *
  * The model is versioned via an integer `revision` field.  Each patch
  * increments the revision.  The `provenance` array records every creation
