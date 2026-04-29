@@ -4,16 +4,45 @@
  * Top-level public surface of the @atlas/contracts package.
  *
  * Canonical scan handoff contract:
- *   SessionCaptureV1 — the only supported contract between Atlas Scan and
- *   Atlas Mind.  Import from '@atlas/contracts' or directly from
- *   '@atlas/contracts/scan'.
+ *   SessionCaptureV2 — the canonical contract between Atlas Scan and Atlas Mind.
+ *   Import from '@atlas/contracts' or directly from '@atlas/contracts/scan'.
+ *
+ *   Raw audio must not be exported; only transcript text travels in the
+ *   SessionCaptureV2 payload.  ScanBundleV1 and ScanJob are NOT production
+ *   handoff contracts.
  *
  * Re-exports:
- *   - SessionCaptureV1 types and validator          (atlasScan module)
+ *   - SessionCaptureV2 types and validator          (atlasScan module)
+ *   - SessionCaptureV1 types and validator          (atlasScan module, legacy)
  *   - Spatial primitives and install markup types   (scan module)
  *   - AtlasPropertyV1 and all sub-models            (atlasProperty module)
  *   - AtlasSpatial alignment types and engine       (atlasSpatial module)
  */
+
+// ─── Canonical scan handoff contract: SessionCaptureV2 ───────────────────────
+
+export type {
+  SessionCaptureV2SchemaVersion,
+  ObjectPinKindV2,
+  QAFlagKindV2,
+  RoomScanV2,
+  PhotoV2,
+  VoiceNoteV2,
+  ObjectPinV2,
+  FloorPlanSnapshotV2,
+  QAFlagV2,
+  SessionCaptureV2,
+  UnknownSessionCaptureV2,
+} from './atlasScan/sessionCaptureV2.types';
+
+export { SESSION_CAPTURE_V2_SCHEMA_VERSION } from './atlasScan/sessionCaptureV2.types';
+
+export { validateSessionCaptureV2 } from './atlasScan/sessionCaptureV2.schema';
+export type {
+  SessionCaptureV2ValidationResult,
+  SessionCaptureV2ValidationSuccess,
+  SessionCaptureV2ValidationFailure,
+} from './atlasScan/sessionCaptureV2.schema';
 
 // ─── Canonical scan handoff contract: SessionCaptureV1 ───────────────────────
 

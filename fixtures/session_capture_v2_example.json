@@ -1,0 +1,170 @@
+{
+  "schemaVersion": "atlas.scan.session.v2",
+  "sessionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "visitReference": "visit-2025-06-15-smith-road",
+  "capturedAt": "2025-06-15T09:00:00Z",
+  "exportedAt": "2025-06-15T10:30:00Z",
+  "deviceModel": "iPhone 15 Pro",
+  "roomScans": [
+    {
+      "roomId": "room-hallway-001",
+      "label": "Hallway",
+      "floorIndex": 0,
+      "capturedAt": "2025-06-15T09:05:00Z",
+      "areaM2": 6.2,
+      "heightM": 2.4
+    },
+    {
+      "roomId": "room-kitchen-001",
+      "label": "Kitchen",
+      "floorIndex": 0,
+      "capturedAt": "2025-06-15T09:12:00Z",
+      "meshRef": "scans/kitchen-001.usdz",
+      "areaM2": 14.1,
+      "heightM": 2.4
+    },
+    {
+      "roomId": "room-utility-001",
+      "label": "Utility Room",
+      "floorIndex": 0,
+      "capturedAt": "2025-06-15T09:20:00Z",
+      "meshRef": "scans/utility-001.usdz",
+      "areaM2": 4.8,
+      "heightM": 2.3
+    },
+    {
+      "roomId": "room-loft-001",
+      "label": "Loft",
+      "floorIndex": 2,
+      "capturedAt": "2025-06-15T09:45:00Z",
+      "areaM2": 18.5,
+      "heightM": 1.8
+    }
+  ],
+  "photos": [
+    {
+      "photoId": "photo-boiler-front-001",
+      "uri": "photos/boiler-front-001.jpg",
+      "thumbnailUri": "photos/thumbs/boiler-front-001.jpg",
+      "capturedAt": "2025-06-15T09:22:00Z",
+      "roomId": "room-utility-001",
+      "objectPinId": "pin-boiler-001",
+      "tags": ["data_plate", "front_panel"],
+      "note": "Worcester Bosch 30i, installed approx 2019"
+    },
+    {
+      "photoId": "photo-boiler-dataplate-001",
+      "uri": "photos/boiler-dataplate-001.jpg",
+      "capturedAt": "2025-06-15T09:23:00Z",
+      "roomId": "room-utility-001",
+      "objectPinId": "pin-boiler-001",
+      "tags": ["data_plate"]
+    },
+    {
+      "photoId": "photo-cylinder-001",
+      "uri": "photos/cylinder-001.jpg",
+      "thumbnailUri": "photos/thumbs/cylinder-001.jpg",
+      "capturedAt": "2025-06-15T09:35:00Z",
+      "roomId": "room-utility-001",
+      "objectPinId": "pin-cylinder-001",
+      "tags": ["hot_water_cylinder", "indirect"]
+    },
+    {
+      "photoId": "photo-consumer-unit-001",
+      "uri": "photos/consumer-unit-001.jpg",
+      "capturedAt": "2025-06-15T09:50:00Z",
+      "roomId": "room-hallway-001",
+      "objectPinId": "pin-consumer-unit-001",
+      "tags": ["consumer_unit", "fuse_board"]
+    },
+    {
+      "photoId": "photo-loft-insulation-001",
+      "uri": "photos/loft-insulation-001.jpg",
+      "capturedAt": "2025-06-15T09:47:00Z",
+      "roomId": "room-loft-001",
+      "tags": ["insulation", "loft"]
+    }
+  ],
+  "voiceNotes": [
+    {
+      "noteId": "note-boiler-age-001",
+      "text": "Boiler is a Worcester Bosch 30i, looks like it was fitted around 2019 based on the data plate. Still under manufacturer warranty potentially.",
+      "capturedAt": "2025-06-15T09:24:00Z",
+      "roomId": "room-utility-001",
+      "objectPinId": "pin-boiler-001"
+    },
+    {
+      "noteId": "note-cylinder-pressure-001",
+      "text": "Indirect cylinder, 120 litre. Pressure relief valve looks original. No solar coil present.",
+      "capturedAt": "2025-06-15T09:36:00Z",
+      "roomId": "room-utility-001",
+      "objectPinId": "pin-cylinder-001"
+    },
+    {
+      "noteId": "note-loft-access-001",
+      "text": "Loft hatch is in the landing. There is existing mineral wool insulation, looks like about 100mm. No rigid insulation visible.",
+      "capturedAt": "2025-06-15T09:48:00Z",
+      "roomId": "room-loft-001"
+    },
+    {
+      "noteId": "note-general-heating-001",
+      "text": "System is a sealed system with a combi providing both heating and hot water. No separate hot water cylinder on main loop.",
+      "capturedAt": "2025-06-15T10:05:00Z"
+    }
+  ],
+  "objectPins": [
+    {
+      "pinId": "pin-boiler-001",
+      "kind": "boiler",
+      "label": "Worcester Bosch 30i",
+      "roomId": "room-utility-001",
+      "position": { "x": 1.2, "y": 0.8, "z": 1.1 },
+      "linkedPhotoIds": ["photo-boiler-front-001", "photo-boiler-dataplate-001"],
+      "linkedNoteIds": ["note-boiler-age-001"],
+      "createdAt": "2025-06-15T09:22:00Z"
+    },
+    {
+      "pinId": "pin-cylinder-001",
+      "kind": "cylinder",
+      "label": "Indirect HW Cylinder 120L",
+      "roomId": "room-utility-001",
+      "position": { "x": 0.4, "y": 0.4, "z": 0.9 },
+      "linkedPhotoIds": ["photo-cylinder-001"],
+      "linkedNoteIds": ["note-cylinder-pressure-001"],
+      "createdAt": "2025-06-15T09:34:00Z"
+    },
+    {
+      "pinId": "pin-consumer-unit-001",
+      "kind": "consumer_unit",
+      "label": "Consumer Unit",
+      "roomId": "room-hallway-001",
+      "position": { "x": 0.1, "y": 1.6 },
+      "linkedPhotoIds": ["photo-consumer-unit-001"],
+      "linkedNoteIds": [],
+      "createdAt": "2025-06-15T09:50:00Z"
+    }
+  ],
+  "floorPlanSnapshots": [
+    {
+      "snapshotId": "snapshot-ground-floor-001",
+      "uri": "floor-plans/ground-floor-001.png",
+      "floorIndex": 0,
+      "capturedAt": "2025-06-15T10:15:00Z"
+    },
+    {
+      "snapshotId": "snapshot-loft-001",
+      "uri": "floor-plans/loft-001.png",
+      "floorIndex": 2,
+      "capturedAt": "2025-06-15T10:16:00Z"
+    }
+  ],
+  "qaFlags": [
+    {
+      "flagId": "qa-loft-confidence-001",
+      "kind": "low_confidence",
+      "message": "Loft scan has reduced geometry confidence due to low headroom near eaves. Area and height values should be treated as approximate.",
+      "roomId": "room-loft-001",
+      "createdAt": "2025-06-15T09:46:00Z"
+    }
+  ]
+}
