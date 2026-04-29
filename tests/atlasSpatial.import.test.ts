@@ -5,16 +5,16 @@
  *
  * Coverage:
  *   1. Minimal capture produces a valid model
- *   2. Room scans map to AtlasRoomV1 entities
- *   3. Room footprint is derived from rawAreaM2 / rawHeightM
- *   4. Placed boiler maps to AtlasHeatSourcePlacementV1
- *   5. Placed cylinder maps to AtlasStorePlacementV1
- *   6. Placed radiator maps to AtlasEmitterV1
- *   7. Placed control maps to AtlasControlPlacementV1
- *   8. Placed flue maps to AtlasAssetPlacementV1 (generic)
+ *   2. Rooms map to AtlasRoomV1 entities
+ *   3. Room footprint is derived from geometry.rawAreaM2 / rawHeightM
+ *   4. Boiler objectMarker maps to AtlasHeatSourcePlacementV1
+ *   5. Cylinder objectMarker maps to AtlasStorePlacementV1
+ *   6. Radiator objectMarker maps to AtlasEmitterV1
+ *   7. Control objectMarker maps to AtlasControlPlacementV1
+ *   8. Flue objectMarker maps to AtlasAssetPlacementV1 (generic)
  *   9. Photos produce evidence markers
- *  10. Voice notes produce evidence markers
- *  11. ModelId and propertyId are set from options / capture
+ *  10. Transcript segments produce evidence markers
+ *  11. ModelId and propertyId are set from options
  *  12. Revision starts at 1
  *  13. Provenance records import_from_scan event
  *  14. Model passes validateAtlasSpatialModel after import
@@ -24,23 +24,73 @@ import { describe, it, expect } from 'vitest';
 import { buildInitialSpatialModelFromSessionCapture } from '../src/atlasSpatial/buildInitialSpatialModelFromSessionCapture';
 import { validateAtlasSpatialModel } from '../src/atlasSpatial/atlasSpatialModel.schema';
 import {
-  buildSessionCaptureV2,
-  buildMinimalSessionCaptureV2,
-  buildCapturedRoomScan,
-  buildCapturedPlacedObject,
-  buildCapturedPhoto,
-  buildCapturedVoiceNote,
-} from '../src/atlasScan/sessionCapture.fixtures';
-import type { SessionCaptureV2 } from '../src/atlasScan/sessionCapture.types';
+  buildPhotoOnlyCapture,
+  buildFullSessionCaptureV1,
+} from '../src/atlasScan/sessionCaptureV1.fixtures';
+import type {
+  SessionCaptureV1,
+  SessionRoomV1,
+  ObjectMarkerV1,
+  EvidenceProvenanceV1,
+} from '../src/atlasScan/sessionCaptureV1.types';
 
 const NOW = '2025-06-01T10:00:00Z';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function baseProvenance(): EvidenceProvenanceV1 {
+  return { source: 'capture', capturedAt: NOW, confidence: 'scanned' };
+}
+
+function minimalCapture(
+  overrides: Partial<SessionCaptureV1> = {},
+): SessionCaptureV1 {
+  return {
+    schemaVersion: 'atlas.scan.session.v1',
+    visitId: 'visit-spatial-test-001',
+    sessionId: 'session-spatial-test-001',
+    status: 'ready',
+    captureStartedAt: NOW,
+    rooms: [],
+    objectMarkers: [],
+    photos: [],
+    notes: [],
+    timelineEvents: [],
+    assetManifest: [],
+    ...overrides,
+  };
+}
+
+function roomCapture(
+  rooms: SessionRoomV1[],
+  overrides: Partial<SessionCaptureV1> = {},
+): SessionCaptureV1 {
+  return minimalCapture({ rooms, ...overrides });
+}
+
+function markerCapture(
+  markers: ObjectMarkerV1[],
+): SessionCaptureV1 {
+  return minimalCapture({ objectMarkers: markers });
+}
+
+function makeMarker(kind: ObjectMarkerV1['kind']): ObjectMarkerV1 {
+  return {
+    markerId: `marker-${kind}-001`,
+    kind,
+    linkedPhotoIds: [],
+    linkedNoteIds: [],
+    createdAt: NOW,
+    provenance: baseProvenance(),
+  };
+}
 
 // ─── 1. Minimal capture produces a valid model ────────────────────────────────
 
 describe('buildInitialSpatialModelFromSessionCapture — minimal capture', () => {
   it('produces a model with schemaVersion atlas.spatial.v1', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildMinimalSessionCaptureV2(),
+      minimalCapture(),
       { importedAt: NOW },
     );
     expect(model.schemaVersion).toBe('atlas.spatial.v1');
@@ -48,34 +98,33 @@ describe('buildInitialSpatialModelFromSessionCapture — minimal capture', () =>
 
   it('starts at revision 1', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildMinimalSessionCaptureV2(),
+      minimalCapture(),
       { importedAt: NOW },
     );
     expect(model.revision).toBe(1);
   });
 
-  it('has empty rooms when no room scans', () => {
+  it('has empty rooms when no rooms', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildMinimalSessionCaptureV2(),
+      minimalCapture(),
       { importedAt: NOW },
     );
     expect(model.rooms).toHaveLength(0);
   });
 });
 
-// ─── 2. Room scans map to AtlasRoomV1 ────────────────────────────────────────
+// ─── 2. Rooms map to AtlasRoomV1 ─────────────────────────────────────────────
 
-describe('buildInitialSpatialModelFromSessionCapture — room scans', () => {
-  it('maps one room scan to one AtlasRoomV1', () => {
-    const capture = buildMinimalSessionCaptureV2({
-      captures: {
-        roomScans: [buildCapturedRoomScan({ id: 'scan-r1', label: 'Lounge' })],
-        photos: [],
-        voiceNotes: [],
-        placedObjects: [],
-        floorPlanSnapshots: [],
+describe('buildInitialSpatialModelFromSessionCapture — rooms', () => {
+  it('maps one room to one AtlasRoomV1', () => {
+    const capture = roomCapture([
+      {
+        roomId: 'scan-r1',
+        label: 'Lounge',
+        status: 'complete',
+        provenance: baseProvenance(),
       },
-    });
+    ]);
     const model = buildInitialSpatialModelFromSessionCapture(capture, { importedAt: NOW });
     expect(model.rooms).toHaveLength(1);
     expect(model.rooms[0]?.id).toBe('scan-r1');
@@ -83,33 +132,27 @@ describe('buildInitialSpatialModelFromSessionCapture — room scans', () => {
   });
 
   it('sets certainty to observed on imported rooms', () => {
-    const capture = buildMinimalSessionCaptureV2({
-      captures: {
-        roomScans: [buildCapturedRoomScan()],
-        photos: [],
-        voiceNotes: [],
-        placedObjects: [],
-        floorPlanSnapshots: [],
-      },
-    });
+    const capture = roomCapture([
+      { roomId: 'r1', label: 'Kitchen', status: 'complete', provenance: baseProvenance() },
+    ]);
     const model = buildInitialSpatialModelFromSessionCapture(capture, { importedAt: NOW });
     expect(model.rooms[0]?.certainty).toBe('observed');
   });
 });
 
-// ─── 3. Footprint from rawAreaM2 / rawHeightM ─────────────────────────────────
+// ─── 3. Footprint from geometry.rawAreaM2 / rawHeightM ───────────────────────
 
 describe('buildInitialSpatialModelFromSessionCapture — room footprint', () => {
   it('creates a room_footprint geometry with the provided height', () => {
-    const capture = buildMinimalSessionCaptureV2({
-      captures: {
-        roomScans: [buildCapturedRoomScan({ rawAreaM2: 16, rawHeightM: 2.7 })],
-        photos: [],
-        voiceNotes: [],
-        placedObjects: [],
-        floorPlanSnapshots: [],
+    const capture = roomCapture([
+      {
+        roomId: 'r1',
+        label: 'Kitchen',
+        status: 'complete',
+        geometry: { rawAreaM2: 16, rawHeightM: 2.7 },
+        provenance: baseProvenance(),
       },
-    });
+    ]);
     const model = buildInitialSpatialModelFromSessionCapture(capture, { importedAt: NOW });
     const geom = model.rooms[0]?.geometry;
     expect(geom?.kind).toBe('room_footprint');
@@ -118,53 +161,59 @@ describe('buildInitialSpatialModelFromSessionCapture — room footprint', () => 
   });
 });
 
-// ─── 4–8. Placed object kind mapping ─────────────────────────────────────────
+// ─── 4–8. Object marker kind mapping ─────────────────────────────────────────
 
-describe('buildInitialSpatialModelFromSessionCapture — placed objects', () => {
-  function makeCapture(kind: string): SessionCaptureV2 {
-    return buildMinimalSessionCaptureV2({
-      captures: {
-        roomScans: [],
-        photos: [],
-        voiceNotes: [],
-        placedObjects: [buildCapturedPlacedObject({ kind: kind as 'boiler' })],
-        floorPlanSnapshots: [],
-      },
-    });
-  }
-
+describe('buildInitialSpatialModelFromSessionCapture — object markers', () => {
   it('maps boiler → heatSources with type boiler', () => {
-    const model = buildInitialSpatialModelFromSessionCapture(makeCapture('boiler'), { importedAt: NOW });
+    const model = buildInitialSpatialModelFromSessionCapture(
+      markerCapture([makeMarker('boiler')]),
+      { importedAt: NOW },
+    );
     expect(model.heatSources).toHaveLength(1);
     expect(model.heatSources[0]?.type).toBe('boiler');
     expect(model.emitters).toHaveLength(0);
   });
 
   it('maps cylinder → hotWaterStores', () => {
-    const model = buildInitialSpatialModelFromSessionCapture(makeCapture('cylinder'), { importedAt: NOW });
+    const model = buildInitialSpatialModelFromSessionCapture(
+      markerCapture([makeMarker('cylinder')]),
+      { importedAt: NOW },
+    );
     expect(model.hotWaterStores).toHaveLength(1);
     expect(model.heatSources).toHaveLength(0);
   });
 
   it('maps radiator → emitters with type panel_radiator', () => {
-    const model = buildInitialSpatialModelFromSessionCapture(makeCapture('radiator'), { importedAt: NOW });
+    const model = buildInitialSpatialModelFromSessionCapture(
+      markerCapture([makeMarker('radiator')]),
+      { importedAt: NOW },
+    );
     expect(model.emitters).toHaveLength(1);
     expect(model.emitters[0]?.type).toBe('panel_radiator');
   });
 
   it('maps control → controls', () => {
-    const model = buildInitialSpatialModelFromSessionCapture(makeCapture('control'), { importedAt: NOW });
+    const model = buildInitialSpatialModelFromSessionCapture(
+      markerCapture([makeMarker('control')]),
+      { importedAt: NOW },
+    );
     expect(model.controls).toHaveLength(1);
   });
 
   it('maps flue → assets (generic)', () => {
-    const model = buildInitialSpatialModelFromSessionCapture(makeCapture('flue'), { importedAt: NOW });
+    const model = buildInitialSpatialModelFromSessionCapture(
+      markerCapture([makeMarker('flue')]),
+      { importedAt: NOW },
+    );
     expect(model.assets).toHaveLength(1);
     expect(model.assets[0]?.assetType).toBe('flue');
   });
 
   it('maps gas_meter → assets (generic)', () => {
-    const model = buildInitialSpatialModelFromSessionCapture(makeCapture('gas_meter'), { importedAt: NOW });
+    const model = buildInitialSpatialModelFromSessionCapture(
+      markerCapture([makeMarker('gas_meter')]),
+      { importedAt: NOW },
+    );
     expect(model.assets).toHaveLength(1);
     expect(model.assets[0]?.assetType).toBe('gas_meter');
   });
@@ -174,17 +223,21 @@ describe('buildInitialSpatialModelFromSessionCapture — placed objects', () => 
 
 describe('buildInitialSpatialModelFromSessionCapture — photos', () => {
   it('creates one evidence marker per photo', () => {
-    const capture = buildMinimalSessionCaptureV2({
-      captures: {
-        roomScans: [],
-        photos: [
-          buildCapturedPhoto({ id: 'p1' }),
-          buildCapturedPhoto({ id: 'p2' }),
-        ],
-        voiceNotes: [],
-        placedObjects: [],
-        floorPlanSnapshots: [],
-      },
+    const capture = minimalCapture({
+      photos: [
+        {
+          photoId: 'p1',
+          uri: 'r2://photos/p1.jpg',
+          capturedAt: NOW,
+          provenance: baseProvenance(),
+        },
+        {
+          photoId: 'p2',
+          uri: 'r2://photos/p2.jpg',
+          capturedAt: NOW,
+          provenance: baseProvenance(),
+        },
+      ],
     });
     const model = buildInitialSpatialModelFromSessionCapture(capture, { importedAt: NOW });
     const photoMarkers = model.evidenceMarkers.filter(
@@ -194,14 +247,15 @@ describe('buildInitialSpatialModelFromSessionCapture — photos', () => {
   });
 
   it('evidence marker source has the correct captureId', () => {
-    const capture = buildMinimalSessionCaptureV2({
-      captures: {
-        roomScans: [],
-        photos: [buildCapturedPhoto({ id: 'photo-xyz' })],
-        voiceNotes: [],
-        placedObjects: [],
-        floorPlanSnapshots: [],
-      },
+    const capture = minimalCapture({
+      photos: [
+        {
+          photoId: 'photo-xyz',
+          uri: 'r2://photos/photo-xyz.jpg',
+          capturedAt: NOW,
+          provenance: baseProvenance(),
+        },
+      ],
     });
     const model = buildInitialSpatialModelFromSessionCapture(capture, { importedAt: NOW });
     const marker = model.evidenceMarkers[0];
@@ -211,20 +265,25 @@ describe('buildInitialSpatialModelFromSessionCapture — photos', () => {
   });
 });
 
-// ─── 10. Voice notes → evidence markers ──────────────────────────────────────
+// ─── 10. Transcript segments → evidence markers ───────────────────────────────
 
-describe('buildInitialSpatialModelFromSessionCapture — voice notes', () => {
-  it('creates one evidence marker per voice note', () => {
-    const capture = buildMinimalSessionCaptureV2({
-      captures: {
-        roomScans: [],
-        photos: [],
-        voiceNotes: [
-          buildCapturedVoiceNote({ id: 'v1' }),
-          buildCapturedVoiceNote({ id: 'v2' }),
+describe('buildInitialSpatialModelFromSessionCapture — transcript segments', () => {
+  it('creates one evidence marker per transcript segment', () => {
+    const capture = minimalCapture({
+      transcript: {
+        status: 'complete',
+        segments: [
+          {
+            segmentId: 'seg-v1',
+            text: 'Boiler is Worcester 30i.',
+            startedAt: NOW,
+          },
+          {
+            segmentId: 'seg-v2',
+            text: 'Flue exit at rear.',
+            startedAt: NOW,
+          },
         ],
-        placedObjects: [],
-        floorPlanSnapshots: [],
       },
     });
     const model = buildInitialSpatialModelFromSessionCapture(capture, { importedAt: NOW });
@@ -240,23 +299,23 @@ describe('buildInitialSpatialModelFromSessionCapture — voice notes', () => {
 describe('buildInitialSpatialModelFromSessionCapture — ids', () => {
   it('uses provided modelId option', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildMinimalSessionCaptureV2({ propertyId: 'prop-abc' }),
+      minimalCapture(),
       { importedAt: NOW, modelId: 'custom-model-id' },
     );
     expect(model.modelId).toBe('custom-model-id');
   });
 
-  it('sets propertyId from capture.propertyId', () => {
+  it('sets propertyId from options.propertyId', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildMinimalSessionCaptureV2({ propertyId: 'prop-abc' }),
-      { importedAt: NOW },
+      minimalCapture(),
+      { importedAt: NOW, propertyId: 'prop-abc' },
     );
     expect(model.propertyId).toBe('prop-abc');
   });
 
   it('sets sourceSessionId from capture.sessionId', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildMinimalSessionCaptureV2({ sessionId: 'sess-xyz' }),
+      minimalCapture({ sessionId: 'sess-xyz' }),
       { importedAt: NOW },
     );
     expect(model.sourceSessionId).toBe('sess-xyz');
@@ -268,7 +327,7 @@ describe('buildInitialSpatialModelFromSessionCapture — ids', () => {
 describe('buildInitialSpatialModelFromSessionCapture — revision', () => {
   it('revision is 1', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildMinimalSessionCaptureV2(),
+      minimalCapture(),
       { importedAt: NOW },
     );
     expect(model.revision).toBe(1);
@@ -280,7 +339,7 @@ describe('buildInitialSpatialModelFromSessionCapture — revision', () => {
 describe('buildInitialSpatialModelFromSessionCapture — provenance', () => {
   it('adds one provenance entry', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildMinimalSessionCaptureV2(),
+      minimalCapture(),
       { importedAt: NOW },
     );
     expect(model.provenance).toHaveLength(1);
@@ -288,7 +347,7 @@ describe('buildInitialSpatialModelFromSessionCapture — provenance', () => {
 
   it('provenance event kind is import_from_scan', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildMinimalSessionCaptureV2(),
+      minimalCapture(),
       { importedAt: NOW },
     );
     expect(model.provenance[0]?.eventKind).toBe('import_from_scan');
@@ -296,7 +355,7 @@ describe('buildInitialSpatialModelFromSessionCapture — provenance', () => {
 
   it('provenance actor defaults to system/importer', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildMinimalSessionCaptureV2(),
+      minimalCapture(),
       { importedAt: NOW },
     );
     expect(model.provenance[0]?.actor.type).toBe('system');
@@ -307,10 +366,19 @@ describe('buildInitialSpatialModelFromSessionCapture — provenance', () => {
 // ─── 14. Full model passes validateAtlasSpatialModel ─────────────────────────
 
 describe('buildInitialSpatialModelFromSessionCapture — round-trip validation', () => {
+  it('model built from photo-only fixture passes schema validation', () => {
+    const model = buildInitialSpatialModelFromSessionCapture(
+      buildPhotoOnlyCapture(),
+      { importedAt: NOW, propertyId: 'prop-test-001' },
+    );
+    const result = validateAtlasSpatialModel(model);
+    expect(result.ok).toBe(true);
+  });
+
   it('model built from full fixture passes schema validation', () => {
     const model = buildInitialSpatialModelFromSessionCapture(
-      buildSessionCaptureV2(),
-      { importedAt: NOW },
+      buildFullSessionCaptureV1(),
+      { importedAt: NOW, propertyId: 'prop-test-002' },
     );
     const result = validateAtlasSpatialModel(model);
     expect(result.ok).toBe(true);

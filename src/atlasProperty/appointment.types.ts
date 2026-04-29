@@ -7,12 +7,12 @@
  * An appointment represents a scheduled property survey visit.  It is created
  * by Atlas Recommendation (or a back-end scheduler) and consumed by Atlas Scan
  * iOS to identify which property is being visited and to cross-reference the
- * resulting SessionCaptureV2 payload.
+ * resulting SessionCaptureV1 payload.
  *
  * Design principles:
  *   - The `appointmentId` is the authoritative cross-system key.  Every
- *     SessionCaptureV2 exported by Atlas Scan must carry this identifier in
- *     its `job.appointmentId` field so the capture can be matched back to the
+ *     SessionCaptureV1 exported by Atlas Scan must carry this identifier in
+ *     its `visitId` field so the capture can be matched back to the
  *     appointment that triggered the visit.
  *   - All consumer apps (Atlas Recommendation, Atlas Scan iOS, Atlas Mind,
  *     customer portal) should reference appointments by `appointmentId`.
@@ -48,7 +48,8 @@ export type AtlasAppointmentStatus =
  *
  * Created by Atlas Recommendation (or a scheduling back-end) and consumed by
  * Atlas Scan iOS.  The `appointmentId` field is the cross-system key that
- * must appear in every `SessionCaptureV2.job.appointmentId` payload.
+ * must appear as the `visitId` in every `SessionCaptureV1` exported by
+ * Atlas Scan.
  *
  * Both Atlas Recommendation and Atlas Scan iOS must reference this contract
  * so that captured survey data can be matched back to the appointment that
@@ -65,8 +66,8 @@ export interface AtlasAppointmentV1 {
    * Unique identifier for this appointment (UUID string).
    *
    * This is the authoritative cross-system key.  Atlas Scan iOS must include
-   * this value in `SessionCaptureV2.job.appointmentId` when exporting a
-   * capture for this appointment.
+   * this value as the `visitId` in the `SessionCaptureV1` exported for
+   * this appointment.
    */
   appointmentId: string;
 
