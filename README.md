@@ -8,28 +8,86 @@ This package defines the **external boundary** between any native scan client (s
 
 It is intentionally small and boring. It exists so both sides of the boundary can agree on a single, versioned, tested definition of what a scan bundle looks like — without any application logic leaking in either direction.
 
-## Contract boundary
+## Canonical handoff contract: SessionCaptureV2
 
-Two distinct top-level types exist at different levels of abstraction:
+**`SessionCaptureV2` is the canonical scan-to-Mind handoff contract.**  It is the
+single top-level payload produced by Atlas Scan iOS and consumed by Atlas Mind.
+
+Import it from the package root or from `@atlas/contracts/scan`:
+
+```ts
+import { validateSessionCaptureV2, SESSION_CAPTURE_V2_SCHEMA_VERSION } from '@atlas/contracts';
+import type { SessionCaptureV2 } from '@atlas/contracts';
+
+const result = validateSessionCaptureV2(rawJson);
+if (!result.ok) {
+  console.error('Invalid SessionCaptureV2:', result.error);
+  return;
+}
+// result.session is typed as SessionCaptureV2 — no sloppy cast
+const session = result.session;
+```
+
+### Raw audio
+
+**Raw audio must never be exported in a SessionCaptureV2 payload.**  Only
+transcript text travels across the handoff boundary.  The validator rejects any
+`voiceNote` that carries `audioUri`, `audioRef`, or `audioData` fields.
+
+### What is NOT a production handoff contract
+
+`ScanBundleV1` and `ScanJob` are not production handoff contracts.  Do not use
+them for the Atlas Scan → Atlas Mind boundary.  Use only `SessionCaptureV2`.
+
+### Required top-level fields
+
+| Field | Description |
+|-------|-------------|
+| `schemaVersion` | Always `'atlas.scan.session.v2'` |
+| `sessionId` | Unique capture session identifier (UUID) |
+| `visitReference` | Cross-system reference to the scheduled visit in Atlas Mind |
+| `capturedAt` | ISO-8601 timestamp of when capture started |
+| `exportedAt` | ISO-8601 timestamp of when Atlas Scan exported this payload |
+| `deviceModel` | Device model identifier (e.g. `"iPhone 15 Pro"`) |
+| `roomScans` | Rooms captured during the session |
+| `photos` | Photos taken as evidence |
+| `voiceNotes` | Voice notes (transcript text only — no audio) |
+| `objectPins` | Object pins placed by the engineer |
+| `floorPlanSnapshots` | Floor-plan snapshots generated from the scan geometry |
+| `qaFlags` | QA flags raised during the session |
+
+### Canonical fixture
+
+`fixtures/session_capture_v2_example.json` is the cross-repo canonical fixture.
+It is produced by the Atlas Scan iOS exporter and validates against
+`validateSessionCaptureV2()` in this package.  Import and validate it in any
+consumer to confirm you are reading the same contract shape.
+
+---
+
+## Contract boundary
 
 | Type | Role |
 |------|------|
-| `ScanBundleV1` | **Raw scan-geometry payload.** Rooms, walls, anchors, QA flags, scan metadata. This is what the scanner produces. |
-| `VisitCapture` | **Portable visit/session artifact.** Wraps `ScanBundleV1` and adds session-level artefacts: voice notes, and (in future) photos, tagged objects, issues, and session metadata. |
-
-`ScanBundleV1` is intentionally narrow — it must stay focused on scan geometry so the import boundary remains clear.  Session-level artefacts such as voice notes belong on `VisitCapture`, not on `ScanBundleV1`.
+| `SessionCaptureV2` | **Canonical scan handoff.** The only supported contract between Atlas Scan and Atlas Mind. |
+| `SessionCaptureV1` | Previous handoff contract — retained for reference and migration. |
+| `ScanBundleV1` | **Not a production handoff contract.** Raw scan-geometry payload for internal use only. |
+| `ScanJob` | **Not a production handoff contract.** Internal job type only. |
 
 ## What lives here
 
 | Path | Contents |
 |------|----------|
-| `src/scan/types.ts` | All scan entity types (`ScanBundleV1`, `VoiceNote`, `VisitCapture`, etc.) |
-| `src/scan/versions.ts` | `SUPPORTED_SCAN_BUNDLE_VERSIONS` constant + version-check helpers |
-| `src/scan/validation.ts` | Runtime validation with type-safe assertion boundary |
-| `src/scan/index.ts` | Barrel re-export of the public surface |
+| `src/atlasScan/sessionCaptureV2.types.ts` | `SessionCaptureV2` and all sub-types |
+| `src/atlasScan/sessionCaptureV2.schema.ts` | `validateSessionCaptureV2()` runtime validator |
+| `src/atlasScan/sessionCaptureV1.types.ts` | `SessionCaptureV1` and all sub-types (legacy) |
+| `src/atlasScan/sessionCaptureV1.schema.ts` | `validateSessionCaptureV1()` runtime validator (legacy) |
+| `src/scan/types.ts` | Spatial primitives and install markup types |
+| `src/scan/validation.ts` | Runtime validation for scan/install types |
+| `src/scan/index.ts` | Barrel re-export of the scan public surface |
 | `Sources/AtlasContracts/` | Swift mirror of the contract types (SwiftPM package) |
-| `fixtures/` | Six canonical test fixtures (valid, invalid, unsupported) |
-| `tests/` | Vitest tests for the validation boundary |
+| `fixtures/session_capture_v2_example.json` | Canonical cross-repo SessionCaptureV2 fixture |
+| `tests/` | Vitest tests for all validation boundaries |
 
 ## What does NOT live here
 
@@ -43,60 +101,6 @@ Two distinct top-level types exist at different levels of abstraction:
 
 **Atlas remains the sole owner of canonical truth and importer/mapping behaviour.**
 
-## Usage
-
-```ts
-import { validateScanBundle, SUPPORTED_SCAN_BUNDLE_VERSIONS } from '@atlas/contracts';
-import type { VisitCapture } from '@atlas/contracts';
-
-// Validate the raw scan bundle
-const result = validateScanBundle(rawJson);
-if (!result.ok) {
-  console.error('Invalid scan bundle:', result.errors);
-  return;
-}
-// result.bundle is typed as ScanBundleV1 — no sloppy cast
-const bundle = result.bundle;
-
-// Combine with session-level artefacts into a portable VisitCapture
-const visitCapture: VisitCapture = {
-  scanBundle: bundle,
-  voiceNotes: capturedVoiceNotes,
-};
-```
-
-## Voice notes
-
-`VoiceNote` is a portable contract shared between Atlas, the engineer portal, and the customer portal. Voice notes belong to the visit session, not to the raw scan geometry, so they live on `VisitCapture.voiceNotes`.
-
-```ts
-import type { VoiceNote, VoiceNoteKind, TranscriptStatus, VoiceNoteSyncState } from '@atlas/contracts';
-```
-
-## Contract ownership rules
-
-1. **This package owns the wire format.** Changes to any type here are a contract change and must go through a versioned bump.
-2. **Atlas owns interpretation.** How a bundle is mapped into the floor-plan model is Atlas's business, not this package's.
-3. **Scan clients own capture.** The iOS app (or any future client) produces bundles; it does not dictate how Atlas uses them.
-
-## Versioning policy
-
-- The `version` field in every bundle is a contract version string (e.g. `"1.0"`).
-- **Minor bumps** (`1.0` → `1.1`): backwards-compatible additions. Old importers may ignore new optional fields.
-- **Major bumps** (`1.x` → `2.0`): breaking changes. Importers that do not recognise the major version **must** reject the bundle with `rejected_unsupported_version`.
-- Add new versions to `SUPPORTED_SCAN_BUNDLE_VERSIONS` in `src/scan/versions.ts` and add corresponding validation logic in `src/scan/validation.ts`.
-
-## Fixtures
-
-| File | Purpose |
-|------|---------|
-| `valid-single-room.json` | One high-confidence room — baseline happy path |
-| `valid-multi-room.json` | Three rooms across two floors — multi-floor mapping |
-| `low-confidence.json` | Valid bundle with low-confidence room and a QA flag |
-| `partial-missing-openings.json` | Valid bundle with an internal wall that has no openings |
-| `invalid-schema.json` | Structurally broken — wrong field types, should be rejected |
-| `unsupported-version.json` | Version `"99.0"` — should be rejected as unsupported |
-
 ## Development
 
 ```sh
@@ -105,3 +109,4 @@ npm run build   # TypeScript compilation
 npm test        # Vitest test run
 swift test      # Swift XCTest suite
 ```
+
