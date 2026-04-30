@@ -1,0 +1,73 @@
+{
+  "sessionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "decisions": [
+    {
+      "ref": "photo-boiler-front-001",
+      "kind": "photo",
+      "reviewStatus": "confirmed",
+      "includeInCustomerReport": true,
+      "reviewedAt": "2025-06-15T14:00:00Z"
+    },
+    {
+      "ref": "photo-boiler-dataplate-001",
+      "kind": "photo",
+      "reviewStatus": "confirmed",
+      "includeInCustomerReport": false,
+      "reviewedAt": "2025-06-15T14:01:00Z"
+    },
+    {
+      "ref": "photo-cylinder-001",
+      "kind": "photo",
+      "reviewStatus": "confirmed",
+      "includeInCustomerReport": true,
+      "reviewedAt": "2025-06-15T14:02:00Z"
+    },
+    {
+      "ref": "photo-consumer-unit-001",
+      "kind": "photo",
+      "reviewStatus": "confirmed",
+      "includeInCustomerReport": true,
+      "reviewedAt": "2025-06-15T14:03:00Z"
+    },
+    {
+      "ref": "photo-loft-insulation-001",
+      "kind": "photo",
+      "reviewStatus": "rejected",
+      "includeInCustomerReport": false,
+      "reviewedAt": "2025-06-15T14:04:00Z"
+    },
+    {
+      "ref": "pin-boiler-001",
+      "kind": "object_pin",
+      "reviewStatus": "confirmed",
+      "includeInCustomerReport": true,
+      "reviewedAt": "2025-06-15T14:10:00Z"
+    },
+    {
+      "ref": "pin-cylinder-001",
+      "kind": "object_pin",
+      "reviewStatus": "confirmed",
+      "includeInCustomerReport": true,
+      "reviewedAt": "2025-06-15T14:11:00Z"
+    },
+    {
+      "ref": "pin-consumer-unit-001",
+      "kind": "object_pin",
+      "reviewStatus": "confirmed",
+      "includeInCustomerReport": false,
+      "reviewedAt": "2025-06-15T14:12:00Z"
+    },
+    {
+      "ref": "snapshot-ground-floor-001",
+      "kind": "floor_plan",
+      "reviewStatus": "confirmed",
+      "includeInCustomerReport": true,
+      "reviewedAt": "2025-06-15T14:20:00Z"
+    },
+    {
+      "ref": "snapshot-loft-001",
+      "kind": "floor_plan",
+      "reviewStatus": "pending"
+    }
+  ]
+}

@@ -126,6 +126,10 @@ export type {
 
 export * from './atlasProperty/index';
 
+// ─── Workspace module ─────────────────────────────────────────────────────────
+
+export * from './workspace/index';
+
 // ─── Spatial alignment module ─────────────────────────────────────────────────
 
 export type {
