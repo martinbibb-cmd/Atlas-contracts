@@ -1,0 +1,12 @@
+{
+  "format": "AtlasVisitPackageV1",
+  "schemaVersion": "1.0",
+  "createdAt": "2025-06-15T14:45:00Z",
+  "visitReference": "visit-2025-06-15-smith-road",
+  "sessionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "workspaceFile": "workspace.json",
+  "sessionCaptureFile": "session_capture_v2.json",
+  "reviewDecisionsFile": "review_decisions.json",
+  "photosDir": "photos",
+  "floorplansDir": "floorplans"
+}

@@ -130,6 +130,10 @@ export * from './atlasProperty/index';
 
 export * from './workspace/index';
 
+// ─── AtlasVisitPackage module ─────────────────────────────────────────────────
+
+export * from './atlasVisitPackage/index';
+
 // ─── Spatial alignment module ─────────────────────────────────────────────────
 
 export type {
