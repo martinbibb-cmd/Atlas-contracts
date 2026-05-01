@@ -75,3 +75,11 @@ export type {
   CapturePointCloudAssetV1,
   SessionCaptureV2,
 } from './sessionCaptureV2';
+
+export type {
+  ScanToMindHandoffReasonV1,
+  ScanToMindHandoffMetaV1,
+  ScanToMindHandoffV1,
+} from './scanToMindHandoff';
+
+export { validateScanToMindHandoffV1 } from './scanToMindHandoff';
