@@ -13,7 +13,7 @@ import Foundation
 
 /// Why the handoff from Scan to Mind is occurring.
 ///
-/// - `completCapture`:  engineer has finished capturing and is handing off
+/// - `completeCapture`:  engineer has finished capturing and is handing off
 ///                      a fully complete session
 /// - `saveProgress`:    engineer is saving partial progress mid-capture
 /// - `reviewInMind`:    engineer wants to review the session in Mind without
@@ -158,7 +158,7 @@ private let requiredCompleteCaptureFlags: [(String, (AtlasVisitReadinessV1) -> B
 ///   5.  visit.visitId must match capture.visitId
 ///   6.  readiness must match visit.readiness by value
 ///   7.  capture.version must be "2.0"
-///   8.  If handoffReason is completeCature:
+///   8.  If handoffReason is completeCapture:
 ///         - visit.status should be complete or readyToComplete
 ///         - all required readiness flags must be true (blocking errors)
 ///   9.  If brandId exists on both visit and capture, they must match
