@@ -62,3 +62,16 @@ export type {
 } from './visit';
 
 export { EMPTY_ATLAS_VISIT_READINESS_V1 } from './visit';
+
+export type {
+  ReviewStatusV1,
+  CaptureProvenanceV1,
+  CaptureEvidenceBaseV1,
+  CapturePhotoV1,
+  CaptureTranscriptV1,
+  CaptureObjectPinV1,
+  CapturePipeRouteV1,
+  CaptureRoomV1,
+  CapturePointCloudAssetV1,
+  SessionCaptureV2,
+} from './sessionCaptureV2';
