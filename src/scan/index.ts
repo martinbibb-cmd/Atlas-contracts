@@ -77,6 +77,13 @@ export type {
 } from './sessionCaptureV2';
 
 export type {
+  HazardObservationCategoryV1,
+  HazardObservationSeverityV1,
+  HazardObservationV1,
+  HazardObservationCaptureV1,
+} from './hazardObservations';
+
+export type {
   FloorPlanBoundaryKindV1,
   FloorPlanOpeningKindV1,
   FabricMaterialV1,

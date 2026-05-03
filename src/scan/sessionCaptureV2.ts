@@ -18,8 +18,10 @@
  */
 
 import type { FloorPlanFabricCaptureV1 } from './floorPlanFabric';
+import type { HazardObservationCaptureV1 } from './hazardObservations';
 
 export type { FloorPlanFabricCaptureV1 };
+export type { HazardObservationCaptureV1 };
 
 // ─── Review status ────────────────────────────────────────────────────────────
 
@@ -280,6 +282,13 @@ export interface SessionCaptureV2 {
    * U-value calculations.
    */
   floorPlanFabric?: FloorPlanFabricCaptureV1;
+  /**
+   * Hazard observations captured during the visit.
+   *
+   * Evidence capture only — not a formal risk assessment.  Customer-facing
+   * outputs must not include hazard detail by default.
+   */
+  hazardObservations?: HazardObservationCaptureV1;
   /** ISO-8601 timestamp of when this payload was first created. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update to this payload. */
