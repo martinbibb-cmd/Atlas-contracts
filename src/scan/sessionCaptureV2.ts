@@ -17,6 +17,10 @@
  *   - No ScanToMindHandoffV1 is defined here.
  */
 
+import type { FloorPlanFabricCaptureV1 } from './floorPlanFabric';
+
+export type { FloorPlanFabricCaptureV1 };
+
 // ─── Review status ────────────────────────────────────────────────────────────
 
 /**
@@ -236,6 +240,7 @@ export interface CapturePointCloudAssetV1 extends CaptureEvidenceBaseV1 {
  *
  * What IS included:
  *   - rooms, photos, transcripts, object pins, pipe routes, point cloud assets
+ *   - floor-plan perimeter and material capture (floorPlanFabric)
  *   - provenance and reviewStatus on every evidence item
  *   - visitId and optional visitNumber / brandId for cross-system keying
  *
@@ -268,6 +273,13 @@ export interface SessionCaptureV2 {
   pipeRoutes: CapturePipeRouteV1[];
   /** Point cloud and 3-D mesh assets exported from the session. */
   pointCloudAssets: CapturePointCloudAssetV1[];
+  /**
+   * Floor-plan perimeter and material capture data.
+   *
+   * This is measured/captured fabric data only — not heat-loss outputs or
+   * U-value calculations.
+   */
+  floorPlanFabric?: FloorPlanFabricCaptureV1;
   /** ISO-8601 timestamp of when this payload was first created. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update to this payload. */
