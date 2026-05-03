@@ -594,3 +594,104 @@ describe('validateSessionCaptureV2 — non-JSON inputs', () => {
     expect(result.error).toContain('non-null object');
   });
 });
+
+// ─── 42–45. quotePlannerEvidence ──────────────────────────────────────────────
+
+describe('validateSessionCaptureV2 — quotePlannerEvidence (scan-to-quote handoff)', () => {
+  it('42. payload without quotePlannerEvidence validates (backward compat)', () => {
+    const result = validateSessionCaptureV2(cloneFixtureWithout('quotePlannerEvidence'));
+    if (!result.ok) throw new Error(result.error);
+    expect(result.ok).toBe(true);
+    expect(result.session.quotePlannerEvidence).toBeUndefined();
+  });
+
+  it('43. payload with candidate boiler and gas meter locations validates', () => {
+    const evidence = {
+      candidateLocations: [
+        {
+          id: 'loc-boiler-candidate',
+          kind: 'existing_boiler',
+          label: 'Kitchen boiler',
+          provenance: 'confirmed_from_scan',
+          confidence: 'confirmed',
+        },
+        {
+          id: 'loc-gas-meter-candidate',
+          kind: 'gas_meter',
+          label: 'Hallway gas meter',
+          provenance: 'confirmed_from_scan',
+          confidence: 'confirmed',
+        },
+      ],
+    };
+    const result = validateSessionCaptureV2(
+      cloneFixture({ quotePlannerEvidence: evidence }),
+    );
+    if (!result.ok) throw new Error(result.error);
+    expect(result.ok).toBe(true);
+    expect(result.session.quotePlannerEvidence?.candidateLocations).toHaveLength(2);
+  });
+
+  it('44. payload with candidate gas route validates', () => {
+    const evidence = {
+      candidateRoutes: [
+        {
+          id: 'route-gas-candidate',
+          routeType: 'gas',
+          status: 'proposed',
+          startLocationId: 'loc-gas-meter-candidate',
+          endLocationId: 'loc-boiler-candidate',
+          points: [
+            { coordinates: { floorPlan: { x: 100, y: 200, unit: 'px' } }, kind: 'start' },
+            { coordinates: { floorPlan: { x: 200, y: 200, unit: 'px' } }, kind: 'end' },
+          ],
+          provenance: 'drawn_on_plan',
+          confidence: 'estimated',
+        },
+      ],
+    };
+    const result = validateSessionCaptureV2(
+      cloneFixture({ quotePlannerEvidence: evidence }),
+    );
+    if (!result.ok) throw new Error(result.error);
+    expect(result.ok).toBe(true);
+    expect(result.session.quotePlannerEvidence?.candidateRoutes).toHaveLength(1);
+  });
+
+  it('45. payload with candidate generic flue route validates', () => {
+    const evidence = {
+      candidateFlueRoutes: [
+        {
+          id: 'flue-route-candidate',
+          boilerLocationId: 'loc-boiler-candidate',
+          terminalLocationId: 'loc-flue-terminal-candidate',
+          flueFamily: 'horizontal_rear',
+          segments: [
+            {
+              id: 'seg-straight',
+              kind: 'straight',
+              physicalLengthM: 0.5,
+              equivalentLengthM: 0.5,
+              quantity: 1,
+            },
+          ],
+          calculation: {
+            equivalentLengthM: 0.5,
+            maxEquivalentLengthM: 10.0,
+            result: 'within_allowance',
+            calculationMode: 'generic_estimate',
+          },
+          ruleSource: 'generic_estimate',
+          provenance: 'inferred',
+          confidence: 'estimated',
+        },
+      ],
+    };
+    const result = validateSessionCaptureV2(
+      cloneFixture({ quotePlannerEvidence: evidence }),
+    );
+    if (!result.ok) throw new Error(result.error);
+    expect(result.ok).toBe(true);
+    expect(result.session.quotePlannerEvidence?.candidateFlueRoutes).toHaveLength(1);
+  });
+});

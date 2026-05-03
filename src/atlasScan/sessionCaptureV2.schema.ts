@@ -367,9 +367,10 @@ function checkOrphanReferences(input: Record<string, unknown>): string | null {
  *   2. schemaVersion must be 'atlas.scan.session.v2'.
  *   3. All required top-level fields must be present and well-typed.
  *   4. Sub-arrays are validated structurally.
- *   5. Capture must not be entirely empty.
- *   6. Voice notes must not carry raw audio fields.
- *   7. Orphan reference checks run last.
+ *   5. quotePlannerEvidence, if present, must be an object (contents are not deeply validated).
+ *   6. Capture must not be entirely empty.
+ *   7. Voice notes must not carry raw audio fields.
+ *   8. Orphan reference checks run last.
  */
 export function validateSessionCaptureV2(
   input: UnknownSessionCaptureV2 | unknown,
@@ -422,6 +423,10 @@ export function validateSessionCaptureV2(
 
   const qaFlagsError = validateQAFlags(input['qaFlags']);
   if (qaFlagsError) return { ok: false, error: qaFlagsError };
+
+  if (input['quotePlannerEvidence'] !== undefined && !isRecord(input['quotePlannerEvidence'])) {
+    return { ok: false, error: 'quotePlannerEvidence must be an object when present' };
+  }
 
   const emptyError = checkNotEmptyCapture(input);
   if (emptyError) return { ok: false, error: emptyError };
