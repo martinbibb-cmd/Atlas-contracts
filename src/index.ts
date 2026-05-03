@@ -134,6 +134,10 @@ export * from './workspace/index';
 
 export * from './atlasVisitPackage/index';
 
+// ─── Session module (quote installation plan) ─────────────────────────────────
+
+export * from './session/index';
+
 // ─── Spatial alignment module ─────────────────────────────────────────────────
 
 export type {

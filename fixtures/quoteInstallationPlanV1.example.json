@@ -1,0 +1,247 @@
+{
+  "id": "plan-001-like-for-like-combi",
+  "sourceSessionId": "session-abc-001",
+  "sourceRecommendationId": "rec-xyz-001",
+  "createdAt": "2025-07-01T09:00:00Z",
+  "updatedAt": "2025-07-01T11:30:00Z",
+  "currentSystem": {
+    "systemType": "combi",
+    "heatSourceLocationId": "loc-existing-boiler",
+    "modelRef": {
+      "manufacturer": "Worcester Bosch",
+      "brand": "Worcester Bosch",
+      "range": "Greenstar",
+      "model": "8000 Life 30kW",
+      "outputKw": 30,
+      "source": "manual"
+    },
+    "notes": "2009 installation, inefficient, corroded heat exchanger"
+  },
+  "proposedSystem": {
+    "systemType": "combi",
+    "heatSourceLocationId": "loc-proposed-boiler",
+    "modelRef": {
+      "manufacturer": "Worcester Bosch",
+      "brand": "Worcester Bosch",
+      "range": "Greenstar",
+      "model": "4000 30kW",
+      "outputKw": 30,
+      "source": "recommendation"
+    }
+  },
+  "jobClassification": {
+    "systemChange": "like_for_like",
+    "locationChange": "same_location",
+    "complexityBand": "low",
+    "derivedFrom": "atlas_rule",
+    "reasons": [
+      "Combi to combi replacement",
+      "Boiler stays on same wall",
+      "Existing flue route reused"
+    ]
+  },
+  "locations": [
+    {
+      "id": "loc-existing-boiler",
+      "kind": "existing_boiler",
+      "label": "Existing combi boiler",
+      "roomId": "room-kitchen-001",
+      "floorId": "floor-ground",
+      "coordinates": {
+        "floorPlan": { "x": 245, "y": 310, "unit": "px" }
+      },
+      "provenance": "confirmed_from_scan",
+      "confidence": "confirmed",
+      "linkedPhotoIds": ["photo-boiler-front", "photo-boiler-flue"],
+      "linkedObjectPinIds": ["pin-boiler-001"]
+    },
+    {
+      "id": "loc-proposed-boiler",
+      "kind": "proposed_boiler",
+      "label": "Proposed combi boiler (same position)",
+      "roomId": "room-kitchen-001",
+      "floorId": "floor-ground",
+      "coordinates": {
+        "floorPlan": { "x": 245, "y": 310, "unit": "px" }
+      },
+      "provenance": "drawn_on_plan",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "loc-existing-flue-terminal",
+      "kind": "existing_flue_terminal",
+      "label": "Existing rear flue terminal",
+      "roomId": "room-kitchen-001",
+      "floorId": "floor-ground",
+      "coordinates": {
+        "floorPlan": { "x": 260, "y": 290, "unit": "px" }
+      },
+      "provenance": "confirmed_from_scan",
+      "confidence": "confirmed",
+      "linkedPhotoIds": ["photo-flue-terminal"]
+    },
+    {
+      "id": "loc-proposed-flue-terminal",
+      "kind": "proposed_flue_terminal",
+      "label": "Proposed rear flue terminal (same position)",
+      "roomId": "room-kitchen-001",
+      "floorId": "floor-ground",
+      "coordinates": {
+        "floorPlan": { "x": 260, "y": 290, "unit": "px" }
+      },
+      "provenance": "drawn_on_plan",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "loc-condensate-internal-waste",
+      "kind": "internal_waste",
+      "label": "Kitchen sink waste (condensate destination)",
+      "roomId": "room-kitchen-001",
+      "floorId": "floor-ground",
+      "provenance": "confirmed_from_scan",
+      "confidence": "confirmed"
+    }
+  ],
+  "routes": [
+    {
+      "id": "route-condensate-001",
+      "routeType": "condensate",
+      "status": "proposed",
+      "startLocationId": "loc-proposed-boiler",
+      "endLocationId": "loc-condensate-internal-waste",
+      "points": [
+        {
+          "id": "pt-cond-start",
+          "coordinates": { "floorPlan": { "x": 245, "y": 310, "unit": "px" } },
+          "kind": "start"
+        },
+        {
+          "id": "pt-cond-end",
+          "coordinates": { "floorPlan": { "x": 245, "y": 370, "unit": "px" } },
+          "kind": "end"
+        }
+      ],
+      "diameterMm": 22,
+      "installMethod": "surface",
+      "insulationRequired": false,
+      "provenance": "drawn_on_plan",
+      "confidence": "estimated",
+      "calculated": {
+        "physicalLengthM": 0.6,
+        "bendCount": 0,
+        "wallPenetrations": 0,
+        "floorPenetrations": 0,
+        "roomsCrossed": ["room-kitchen-001"],
+        "complexityBand": "low",
+        "calculatedAt": "2025-07-01T11:00:00Z",
+        "calculationMode": "measured"
+      }
+    }
+  ],
+  "flueRoutes": [
+    {
+      "id": "flue-route-001",
+      "boilerLocationId": "loc-proposed-boiler",
+      "terminalLocationId": "loc-proposed-flue-terminal",
+      "flueFamily": "horizontal_rear",
+      "applianceModelRef": {
+        "manufacturer": "Worcester Bosch",
+        "model": "4000 30kW",
+        "outputKw": 30,
+        "source": "recommendation"
+      },
+      "segments": [
+        {
+          "id": "seg-straight-001",
+          "kind": "straight",
+          "physicalLengthM": 0.5,
+          "equivalentLengthM": 0.5,
+          "quantity": 1
+        },
+        {
+          "id": "seg-elbow90-001",
+          "kind": "elbow_90",
+          "equivalentLengthM": 1.0,
+          "quantity": 1,
+          "notes": "Generic 90-degree elbow equivalent length"
+        },
+        {
+          "id": "seg-terminal-001",
+          "kind": "terminal",
+          "equivalentLengthM": 0.0,
+          "quantity": 1
+        }
+      ],
+      "calculation": {
+        "physicalLengthM": 0.5,
+        "equivalentLengthM": 1.5,
+        "maxEquivalentLengthM": 10.0,
+        "remainingAllowanceM": 8.5,
+        "result": "within_allowance",
+        "calculationMode": "generic_estimate",
+        "assumptions": [
+          "90-degree elbow penalty: 1.0 m (generic estimate)",
+          "Maximum equivalent length sourced from generic combi guidance"
+        ]
+      },
+      "ruleSource": "generic_estimate",
+      "provenance": "drawn_on_plan",
+      "confidence": "estimated"
+    }
+  ],
+  "generatedScope": [
+    {
+      "id": "scope-remove-boiler",
+      "category": "remove_existing",
+      "label": "Disconnect and remove existing combi boiler",
+      "source": "generated_from_location",
+      "relatedLocationIds": ["loc-existing-boiler"],
+      "confidence": "confirmed",
+      "includedByDefault": true
+    },
+    {
+      "id": "scope-fit-boiler",
+      "category": "fit_new",
+      "label": "Supply and fit new combi boiler",
+      "description": "Worcester Bosch Greenstar 4000 30kW",
+      "source": "generated_from_job_classification",
+      "relatedLocationIds": ["loc-proposed-boiler"],
+      "confidence": "confirmed",
+      "includedByDefault": true
+    },
+    {
+      "id": "scope-route-flue",
+      "category": "route_flue",
+      "label": "Fit flue assembly (horizontal rear)",
+      "source": "generated_from_route",
+      "relatedLocationIds": ["loc-proposed-boiler", "loc-proposed-flue-terminal"],
+      "confidence": "estimated",
+      "includedByDefault": true
+    },
+    {
+      "id": "scope-condensate",
+      "category": "condensate",
+      "label": "Run condensate pipe to sink waste",
+      "source": "generated_from_route",
+      "relatedRouteIds": ["route-condensate-001"],
+      "confidence": "estimated",
+      "includedByDefault": true
+    },
+    {
+      "id": "scope-commission",
+      "category": "commissioning",
+      "label": "Commission boiler and controls",
+      "source": "generated_from_job_classification",
+      "confidence": "confirmed",
+      "includedByDefault": true
+    }
+  ],
+  "confidenceSummary": {
+    "confirmedCount": 4,
+    "measuredCount": 0,
+    "estimatedCount": 2,
+    "needsVerificationCount": 0,
+    "assumedCount": 0
+  },
+  "notes": "Standard like-for-like combi swap. Existing flue and pipework in good condition."
+}
