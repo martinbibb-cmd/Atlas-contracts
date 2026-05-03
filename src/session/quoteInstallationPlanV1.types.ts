@@ -456,6 +456,51 @@ export interface QuotePlanConfidenceSummaryV1 {
   assumedCount: number;
 }
 
+// ─── Scan planner evidence ────────────────────────────────────────────────────
+
+/**
+ * Candidate install-planner evidence captured by Atlas Scan.
+ *
+ * Atlas Scan may provide candidate install locations (e.g. boiler, gas meter,
+ * flue terminal, internal waste, gully, soakaway candidate, cylinder location)
+ * and associated route or flue evidence observed during the survey visit.
+ *
+ * This is capture evidence only — Atlas Mind must review and confirm these
+ * candidates before they become canonical QuoteInstallationPlanV1 truth.
+ * Scan is not responsible for recommendation or quote decisions.
+ *
+ * Candidate routes and flue routes may be measured, drawn, inferred, or
+ * assumed; consumers should check the `provenance` and `confidence` fields
+ * on each item accordingly.
+ */
+export interface QuotePlannerEvidenceCaptureV1 {
+  /**
+   * Candidate install locations observed by Scan.
+   *
+   * May include any QuoteInstallLocationKindV1 (e.g. existing_boiler,
+   * gas_meter, proposed_flue_terminal, internal_waste, gully,
+   * soakaway_candidate, proposed_cylinder).  All locations are candidates
+   * until confirmed by Atlas Mind.
+   */
+  candidateLocations?: QuoteInstallLocationV1[];
+  /**
+   * Candidate pipe or cable routes observed or drawn by Scan.
+   *
+   * Routes may be measured, drawn on plan, inferred from scan geometry,
+   * or assumed.  Check `provenance` and `confidence` on each route.
+   */
+  candidateRoutes?: QuoteInstallRouteV1[];
+  /**
+   * Candidate flue route assemblies observed or drawn by Scan.
+   *
+   * Flue routes may be measured, drawn, inferred, or assumed.  Check
+   * `provenance` and `confidence` on each route.
+   */
+  candidateFlueRoutes?: QuoteFlueRouteV1[];
+  /** Optional free-text notes from the engineer about install planner evidence. */
+  notes?: string;
+}
+
 // ─── Root contract ────────────────────────────────────────────────────────────
 
 /**

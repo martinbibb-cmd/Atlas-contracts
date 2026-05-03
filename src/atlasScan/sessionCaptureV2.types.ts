@@ -20,6 +20,8 @@
 
 // ─── Schema version ───────────────────────────────────────────────────────────
 
+import type { QuotePlannerEvidenceCaptureV1 } from '../session/quoteInstallationPlanV1.types';
+
 /** The only supported schemaVersion string for SessionCaptureV2 payloads. */
 export const SESSION_CAPTURE_V2_SCHEMA_VERSION =
   'atlas.scan.session.v2' as const;
@@ -266,6 +268,22 @@ export interface SessionCaptureV2 {
   floorPlanSnapshots: FloorPlanSnapshotV2[];
   /** QA flags raised during the session. */
   qaFlags: QAFlagV2[];
+  /**
+   * Optional install-planner evidence provided by Atlas Scan.
+   *
+   * Scan may provide candidate install locations (e.g. boiler, gas meter,
+   * flue terminal, internal waste, gully, soakaway candidate, cylinder
+   * location) and associated route or flue evidence to assist Atlas Mind
+   * when building a QuoteInstallationPlanV1.
+   *
+   * This field is capture evidence only — Atlas Mind must review and confirm
+   * all candidates before they become canonical quote plan truth.  Scan is
+   * not responsible for recommendation or quote decisions.
+   *
+   * Omitting this field is valid; existing Scan 1.x and 2.x payloads that do
+   * not include install-planner evidence continue to validate normally.
+   */
+  quotePlannerEvidence?: QuotePlannerEvidenceCaptureV1;
 }
 
 /**

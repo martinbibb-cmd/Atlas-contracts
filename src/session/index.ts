@@ -39,4 +39,5 @@ export type {
   QuoteGeneratedScopeItemV1,
   QuotePlanConfidenceSummaryV1,
   QuoteInstallationPlanV1,
+  QuotePlannerEvidenceCaptureV1,
 } from './quoteInstallationPlanV1.types';
