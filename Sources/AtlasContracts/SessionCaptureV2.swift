@@ -614,6 +614,10 @@ public struct SessionCaptureV2: Codable, Sendable, Equatable {
     public let pointCloudAssets: [CapturePointCloudAssetV1]
     /// Floor-plan perimeter and material capture data.
     ///
+    /// Present when Atlas Scan has recorded room boundary geometry or fabric
+    /// material evidence for this visit.  Absent (`nil`) when no floor-plan
+    /// capture has been performed.
+    ///
     /// This is measured/captured fabric data only — not heat-loss outputs or
     /// U-value calculations.
     public let floorPlanFabric: FloorPlanFabricCaptureV1?

@@ -83,6 +83,8 @@ public enum FabricMaterialV1: String, Codable, Sendable, Equatable {
 
 /// A 2-D or 3-D point in a named coordinate space.
 ///
+/// `coordinateSpace` uses `CoordinateSpaceV1` defined in `SessionCaptureV2.swift`.
+///
 /// - `roomPlan`:  local to the current room's scan capture
 /// - `floorPlan`: normalised to the storey floor plan
 /// - `world`:     ARKit world coordinate space
