@@ -77,6 +77,17 @@ export type {
 } from './sessionCaptureV2';
 
 export type {
+  FloorPlanBoundaryKindV1,
+  FloorPlanOpeningKindV1,
+  FabricMaterialV1,
+  FloorPlanPointV1,
+  FloorPlanBoundaryV1,
+  FloorPlanOpeningV1,
+  FloorPlanRoomFabricV1,
+  FloorPlanFabricCaptureV1,
+} from './floorPlanFabric';
+
+export type {
   ScanToMindHandoffReasonV1,
   ScanToMindHandoffMetaV1,
   ScanToMindHandoffV1,

@@ -612,6 +612,15 @@ public struct SessionCaptureV2: Codable, Sendable, Equatable {
     public let pipeRoutes: [CapturePipeRouteV1]
     /// Point cloud and 3-D mesh assets exported from the session.
     public let pointCloudAssets: [CapturePointCloudAssetV1]
+    /// Floor-plan perimeter and material capture data.
+    ///
+    /// Present when Atlas Scan has recorded room boundary geometry or fabric
+    /// material evidence for this visit.  Absent (`nil`) when no floor-plan
+    /// capture has been performed.
+    ///
+    /// This is measured/captured fabric data only — not heat-loss outputs or
+    /// U-value calculations.
+    public let floorPlanFabric: FloorPlanFabricCaptureV1?
     /// ISO-8601 timestamp of when this payload was first created.
     public let createdAt: String
     /// ISO-8601 timestamp of the last update to this payload.
@@ -627,6 +636,7 @@ public struct SessionCaptureV2: Codable, Sendable, Equatable {
         objectPins: [CaptureObjectPinV1] = [],
         pipeRoutes: [CapturePipeRouteV1] = [],
         pointCloudAssets: [CapturePointCloudAssetV1] = [],
+        floorPlanFabric: FloorPlanFabricCaptureV1? = nil,
         createdAt: String,
         updatedAt: String
     ) {
@@ -640,6 +650,7 @@ public struct SessionCaptureV2: Codable, Sendable, Equatable {
         self.objectPins = objectPins
         self.pipeRoutes = pipeRoutes
         self.pointCloudAssets = pointCloudAssets
+        self.floorPlanFabric = floorPlanFabric
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
