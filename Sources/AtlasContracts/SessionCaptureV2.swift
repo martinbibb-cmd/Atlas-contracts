@@ -621,6 +621,11 @@ public struct SessionCaptureV2: Codable, Sendable, Equatable {
     /// This is measured/captured fabric data only — not heat-loss outputs or
     /// U-value calculations.
     public let floorPlanFabric: FloorPlanFabricCaptureV1?
+    /// Hazard observations captured during the visit.
+    ///
+    /// Evidence capture only — not a formal risk assessment.  Customer-facing
+    /// outputs must not include hazard detail by default.
+    public let hazardObservations: HazardObservationCaptureV1?
     /// ISO-8601 timestamp of when this payload was first created.
     public let createdAt: String
     /// ISO-8601 timestamp of the last update to this payload.
@@ -637,6 +642,7 @@ public struct SessionCaptureV2: Codable, Sendable, Equatable {
         pipeRoutes: [CapturePipeRouteV1] = [],
         pointCloudAssets: [CapturePointCloudAssetV1] = [],
         floorPlanFabric: FloorPlanFabricCaptureV1? = nil,
+        hazardObservations: HazardObservationCaptureV1? = nil,
         createdAt: String,
         updatedAt: String
     ) {
@@ -651,6 +657,7 @@ public struct SessionCaptureV2: Codable, Sendable, Equatable {
         self.pipeRoutes = pipeRoutes
         self.pointCloudAssets = pointCloudAssets
         self.floorPlanFabric = floorPlanFabric
+        self.hazardObservations = hazardObservations
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
