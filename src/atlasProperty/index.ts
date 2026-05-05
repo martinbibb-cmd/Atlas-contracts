@@ -146,3 +146,11 @@ export type {
 } from './planningOverlay.types';
 
 export { derivePlanningReadiness } from './planningOverlay.types';
+
+// ─── Flue clearance review ────────────────────────────────────────────────────
+
+export type {
+  FlueClearanceReviewStatus,
+  FlueClearanceReviewSubmissionStatus,
+  FlueClearanceReviewV1,
+} from './flueClearanceReview.types';
