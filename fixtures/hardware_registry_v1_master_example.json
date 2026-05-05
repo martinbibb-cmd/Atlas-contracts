@@ -1,0 +1,245 @@
+{
+  "schemaVersion": "1.0",
+  "updatedAt": "2026-05-05T00:00:00Z",
+  "appliances": [
+    {
+      "schemaVersion": "1.0",
+      "modelId": "worcester_greenstar_4000_30kw",
+      "brand": "Worcester Bosch",
+      "modelName": "Greenstar 4000 30kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 390,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung combi. Dimensions from Worcester Bosch installation guide MI 2210 (rev. 2024)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "worcester_greenstar_4000_25kw",
+      "brand": "Worcester Bosch",
+      "modelName": "Greenstar 4000 25kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 390,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 25,
+      "notes": "Wall-hung combi. Same casing as 30kW variant. Dimensions from Worcester Bosch installation guide MI 2210 (rev. 2024)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "worcester_greenstar_i_system_30kw",
+      "brand": "Worcester Bosch",
+      "modelName": "Greenstar i System 30kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 390,
+        "depthMm": 295,
+        "heightMm": 700
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung system boiler. Dimensions from Worcester Bosch installation guide MI 2157 (rev. 2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "vaillant_ecofit_pure_30kw",
+      "brand": "Vaillant",
+      "modelName": "ecoFIT pure 30kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 440,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 150,
+        "bottomMm": 200
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung combi. Dimensions from Vaillant installation instructions 0020200723 (rev. 09/2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "vaillant_ecofit_pure_25kw",
+      "brand": "Vaillant",
+      "modelName": "ecoFIT pure 25kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 440,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 150,
+        "bottomMm": 200
+      },
+      "outputKw": 25,
+      "notes": "Wall-hung combi. Same casing as 30kW variant. Dimensions from Vaillant installation instructions 0020200723 (rev. 09/2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "ideal_logic_plus_combi_30kw",
+      "brand": "Ideal Heating",
+      "modelName": "Logic+ Combi C30",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 395,
+        "depthMm": 280,
+        "heightMm": 680
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 150,
+        "bottomMm": 150
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung combi. Dimensions from Ideal Logic+ installation and servicing guide (2023 edition)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "baxi_800_combi_30kw",
+      "brand": "Baxi",
+      "modelName": "800 Combi 2 30kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 390,
+        "depthMm": 295,
+        "heightMm": 700
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung combi. Dimensions from Baxi 800 installation guide 7219283 (2024)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "viessmann_vitodens_100w_26kw",
+      "brand": "Viessmann",
+      "modelName": "Vitodens 100-W 26kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 400,
+        "depthMm": 350,
+        "heightMm": 850
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 26,
+      "notes": "Wall-hung combi. Dimensions from Viessmann technical data sheet B2HA 045 (2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "grant_vortex_pro_26_35kw",
+      "brand": "Grant UK",
+      "modelName": "Vortex Pro 26/35kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 595,
+        "depthMm": 595,
+        "heightMm": 945
+      },
+      "clearanceRules": {
+        "frontMm": 700,
+        "sideMm": 150,
+        "topMm": 300,
+        "bottomMm": 0
+      },
+      "outputKw": 35,
+      "notes": "Floor-standing oil boiler. Wider clearances required per OFTEC. Dimensions from Grant Vortex Pro installation manual VXPROBOI (2022)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "mitsubishi_ecodan_ashp_8_5kw",
+      "brand": "Mitsubishi Electric",
+      "modelName": "Ecodan ASHP 8.5kW (outdoor unit)",
+      "category": "heat_pump",
+      "dimensions": {
+        "widthMm": 1135,
+        "depthMm": 330,
+        "heightMm": 695
+      },
+      "clearanceRules": {
+        "frontMm": 300,
+        "sideMm": 50,
+        "topMm": 200,
+        "bottomMm": 100
+      },
+      "outputKw": 8.5,
+      "notes": "Outdoor ASHP unit (PUHZ-SW80VKA). Requires unobstructed airflow at front. Dimensions from Mitsubishi Ecodan PUHZ-SW installation manual PAC-MK53CRB (2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "vaillant_arotherm_plus_7kw",
+      "brand": "Vaillant",
+      "modelName": "aroTHERM plus 7kW (outdoor unit)",
+      "category": "heat_pump",
+      "dimensions": {
+        "widthMm": 1030,
+        "depthMm": 410,
+        "heightMm": 1060
+      },
+      "clearanceRules": {
+        "frontMm": 500,
+        "sideMm": 200,
+        "topMm": 300,
+        "bottomMm": 100
+      },
+      "outputKw": 7,
+      "notes": "Outdoor ASHP unit (VWL 75/6 A 230V). Dimensions from Vaillant aroTHERM plus installation instructions 0020262325 (2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "range_tribune_xe_150l",
+      "brand": "Range",
+      "modelName": "Tribune XE 150L",
+      "category": "cylinder",
+      "dimensions": {
+        "widthMm": 545,
+        "depthMm": 545,
+        "heightMm": 1050
+      },
+      "clearanceRules": {
+        "frontMm": 300,
+        "sideMm": 50,
+        "topMm": 350,
+        "bottomMm": 0
+      },
+      "notes": "Indirect unvented hot-water cylinder. Top clearance required for immersion heater removal. Dimensions from Range Tribune XE installation manual (2023)."
+    }
+  ]
+}

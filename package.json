@@ -17,6 +17,10 @@
     "./atlasProperty": {
       "import": "./dist/atlasProperty/index.js",
       "types": "./dist/atlasProperty/index.d.ts"
+    },
+    "./hardwareRegistry": {
+      "import": "./dist/hardwareRegistry/index.js",
+      "types": "./dist/hardwareRegistry/index.d.ts"
     }
   },
   "scripts": {

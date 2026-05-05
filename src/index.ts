@@ -134,6 +134,10 @@ export * from './workspace/index';
 
 export * from './atlasVisitPackage/index';
 
+// ─── Hardware registry module ─────────────────────────────────────────────────
+
+export * from './hardwareRegistry/index';
+
 // ─── Session module (quote installation plan) ─────────────────────────────────
 
 export * from './session/index';
