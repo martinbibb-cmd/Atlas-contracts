@@ -60,10 +60,24 @@ export interface ScanToMindHandoffMetaV1 {
  * Contains the visit identity, readiness flags, capture evidence, and optional
  * warnings produced during capture.  No engine outputs, recommendation scores,
  * proposal design state, or derived values belong here.
+ *
+ * The optional `handoffId` field is a stable UUID for this specific handoff
+ * record, distinct from `visit.visitId`.  When present it allows the iOS app
+ * to fetch an existing session from the Mind D1 API using either the
+ * `handoffId` or the `visit.visitId` — supporting the bi-directional recall
+ * flow (`atlasscan://recall?visitId=...`).
  */
 export interface ScanToMindHandoffV1 {
   /** Contract version discriminant — always '1.0'. */
   version: '1.0';
+  /**
+   * Stable UUID for this handoff record (optional).
+   *
+   * Assigned by Mind when the handoff is persisted.  The Scan app can use
+   * this as the primary key when recalling a session (`atlasscan://recall`),
+   * falling back to `visit.visitId` if absent.
+   */
+  handoffId?: string;
   /** Metadata describing the handoff context. */
   meta: ScanToMindHandoffMetaV1;
   /** The visit identity record produced by Atlas Scan. */
