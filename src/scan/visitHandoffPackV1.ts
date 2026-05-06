@@ -26,7 +26,7 @@ export type VisitHandoffPackV1SchemaVersion =
 
 /**
  * VisitHandoffPackV1 — the payload dispatched from Atlas Mind to Atlas Scan
- * at the start of a visit visit.
+ * at the start of a visit.
  *
  * Delivered as a percent-encoded JSON payload on the `/receive-scan` deep-link
  * route so that Atlas Scan can pre-load the visit context before the engineer

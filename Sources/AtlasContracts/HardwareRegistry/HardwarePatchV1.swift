@@ -31,7 +31,7 @@ public let hardwarePatchV1SchemaVersion = "1.0"
 ///                reflect site-specific measurements.
 public enum HardwarePatchSourceV1: String, Codable, Sendable, Equatable {
     case custom
-    case override = "override"
+    case override
 }
 
 // MARK: - HardwarePatchV1
