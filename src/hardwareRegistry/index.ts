@@ -22,6 +22,16 @@ export type {
 
 export { HARDWARE_REGISTRY_V1_SCHEMA_VERSION } from './applianceDefinitionV1.types';
 
+// ─── Hardware patch types ─────────────────────────────────────────────────────
+
+export type {
+  HardwarePatchV1SchemaVersion,
+  HardwarePatchSourceV1,
+  HardwarePatchV1,
+} from './hardwarePatchV1.types';
+
+export { HARDWARE_PATCH_V1_SCHEMA_VERSION } from './hardwarePatchV1.types';
+
 // ─── Validators ───────────────────────────────────────────────────────────────
 
 export { validateApplianceDefinitionV1, validateMasterRegistryV1 } from './applianceDefinitionV1.schema';

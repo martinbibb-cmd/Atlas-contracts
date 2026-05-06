@@ -101,3 +101,10 @@ export type {
 } from './scanToMindHandoff';
 
 export { validateScanToMindHandoffV1 } from './scanToMindHandoff';
+
+export type {
+  VisitHandoffPackV1SchemaVersion,
+  VisitHandoffPackV1,
+} from './visitHandoffPackV1';
+
+export { VISIT_HANDOFF_PACK_V1_SCHEMA_VERSION } from './visitHandoffPackV1';

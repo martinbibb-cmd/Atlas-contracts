@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "updatedAt": "2026-05-05T00:00:00Z",
+  "updatedAt": "2026-05-06T00:00:00Z",
   "appliances": [
     {
       "schemaVersion": "1.0",
@@ -44,6 +44,26 @@
     },
     {
       "schemaVersion": "1.0",
+      "modelId": "worcester_greenstar_4000_35kw",
+      "brand": "Worcester Bosch",
+      "modelName": "Greenstar 4000 35kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 390,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 35,
+      "notes": "Wall-hung combi. Same casing as 25/30kW variants. Dimensions from Worcester Bosch installation guide MI 2210 (rev. 2024)."
+    },
+    {
+      "schemaVersion": "1.0",
       "modelId": "worcester_greenstar_i_system_30kw",
       "brand": "Worcester Bosch",
       "modelName": "Greenstar i System 30kW",
@@ -61,6 +81,26 @@
       },
       "outputKw": 30,
       "notes": "Wall-hung system boiler. Dimensions from Worcester Bosch installation guide MI 2157 (rev. 2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "worcester_greenstar_8000_style_30kw",
+      "brand": "Worcester Bosch",
+      "modelName": "Greenstar 8000 Style 30kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 390,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung combi. Premium lifestyle casing. Dimensions from Worcester Bosch installation guide MI 2313 (rev. 2024)."
     },
     {
       "schemaVersion": "1.0",
@@ -104,6 +144,66 @@
     },
     {
       "schemaVersion": "1.0",
+      "modelId": "vaillant_ecofit_pure_35kw",
+      "brand": "Vaillant",
+      "modelName": "ecoFIT pure 35kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 440,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 150,
+        "bottomMm": 200
+      },
+      "outputKw": 35,
+      "notes": "Wall-hung combi. Same casing as 25/30kW variants. Dimensions from Vaillant installation instructions 0020200723 (rev. 09/2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "vaillant_ecotec_plus_combi_30kw",
+      "brand": "Vaillant",
+      "modelName": "ecoTEC plus Combi 30kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 440,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 150,
+        "bottomMm": 200
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung combi. Superseded by ecoFIT pure in most markets. Dimensions from Vaillant installation instructions 0020092498 (rev. 2022)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "vaillant_ecotec_plus_combi_25kw",
+      "brand": "Vaillant",
+      "modelName": "ecoTEC plus Combi 25kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 440,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 150,
+        "bottomMm": 200
+      },
+      "outputKw": 25,
+      "notes": "Wall-hung combi. Same casing as 30kW ecoTEC plus variant. Dimensions from Vaillant installation instructions 0020092498 (rev. 2022)."
+    },
+    {
+      "schemaVersion": "1.0",
       "modelId": "ideal_logic_plus_combi_30kw",
       "brand": "Ideal Heating",
       "modelName": "Logic+ Combi C30",
@@ -121,6 +221,246 @@
       },
       "outputKw": 30,
       "notes": "Wall-hung combi. Dimensions from Ideal Logic+ installation and servicing guide (2023 edition)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "ideal_logic_plus_combi_25kw",
+      "brand": "Ideal Heating",
+      "modelName": "Logic+ Combi C25",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 395,
+        "depthMm": 280,
+        "heightMm": 680
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 150,
+        "bottomMm": 150
+      },
+      "outputKw": 25,
+      "notes": "Wall-hung combi. Same casing as C30. Dimensions from Ideal Logic+ installation and servicing guide (2023 edition)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "ideal_logic_plus_system_30kw",
+      "brand": "Ideal Heating",
+      "modelName": "Logic+ System S30",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 395,
+        "depthMm": 280,
+        "heightMm": 680
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 150,
+        "bottomMm": 150
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung system boiler. Dimensions from Ideal Logic+ installation and servicing guide (2023 edition)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "ideal_vogue_gen2_combi_32kw",
+      "brand": "Ideal Heating",
+      "modelName": "Vogue Gen2 Combi 32kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 400,
+        "depthMm": 300,
+        "heightMm": 700
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 150,
+        "bottomMm": 150
+      },
+      "outputKw": 32,
+      "notes": "Wall-hung combi. Premium range. Dimensions from Ideal Vogue Gen2 installation guide (2024 edition)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "glowworm_ultimate3_combi_30kw",
+      "brand": "Glow-worm",
+      "modelName": "Ultimate3 Combi 30kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 440,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 150,
+        "bottomMm": 200
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung combi. Vaillant Group product sharing ecoFIT pure platform. Dimensions from Glow-worm Ultimate3 installation instructions 2000822831 (rev. 2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "glowworm_ultimate3_combi_25kw",
+      "brand": "Glow-worm",
+      "modelName": "Ultimate3 Combi 25kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 440,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 150,
+        "bottomMm": 200
+      },
+      "outputKw": 25,
+      "notes": "Wall-hung combi. Same casing as 30kW variant. Dimensions from Glow-worm Ultimate3 installation instructions 2000822831 (rev. 2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "glowworm_ultimate3_system_30kw",
+      "brand": "Glow-worm",
+      "modelName": "Ultimate3 System 30kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 440,
+        "depthMm": 338,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 150,
+        "bottomMm": 200
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung system boiler. Vaillant Group product. Dimensions from Glow-worm Ultimate3 System installation instructions 2000822832 (rev. 2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "glowworm_energy_combi_30kw",
+      "brand": "Glow-worm",
+      "modelName": "Energy Combi 30kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 440,
+        "depthMm": 330,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 150,
+        "bottomMm": 200
+      },
+      "outputKw": 30,
+      "notes": "Wall-hung combi. Earlier series; widely installed across UK stock. Dimensions from Glow-worm Energy installation instructions 0020105193 (rev. 2021)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "glowworm_energy_combi_25kw",
+      "brand": "Glow-worm",
+      "modelName": "Energy Combi 25kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 440,
+        "depthMm": 330,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 150,
+        "bottomMm": 200
+      },
+      "outputKw": 25,
+      "notes": "Wall-hung combi. Same casing as 30kW Energy variant. Dimensions from Glow-worm Energy installation instructions 0020105193 (rev. 2021)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "viessmann_vitodens_100w_26kw",
+      "brand": "Viessmann",
+      "modelName": "Vitodens 100-W 26kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 400,
+        "depthMm": 350,
+        "heightMm": 850
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 26,
+      "notes": "Wall-hung combi. Dimensions from Viessmann technical data sheet B2HA 045 (2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "viessmann_vitodens_100w_35kw",
+      "brand": "Viessmann",
+      "modelName": "Vitodens 100-W 35kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 400,
+        "depthMm": 350,
+        "heightMm": 850
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 35,
+      "notes": "Wall-hung combi. Same casing as 26kW variant. Dimensions from Viessmann technical data sheet B2HA 045 (2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "viessmann_vitodens_200w_26kw",
+      "brand": "Viessmann",
+      "modelName": "Vitodens 200-W 26kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 450,
+        "depthMm": 380,
+        "heightMm": 850
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 26,
+      "notes": "Wall-hung combi. Premium range with stainless steel heat exchanger. Dimensions from Viessmann technical data sheet B2HA 082 (2023)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "viessmann_vitodens_200w_35kw",
+      "brand": "Viessmann",
+      "modelName": "Vitodens 200-W 35kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 450,
+        "depthMm": 380,
+        "heightMm": 850
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 10,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 35,
+      "notes": "Wall-hung combi. Same casing as 26kW variant. Dimensions from Viessmann technical data sheet B2HA 082 (2023)."
     },
     {
       "schemaVersion": "1.0",
@@ -144,23 +484,43 @@
     },
     {
       "schemaVersion": "1.0",
-      "modelId": "viessmann_vitodens_100w_26kw",
-      "brand": "Viessmann",
-      "modelName": "Vitodens 100-W 26kW",
+      "modelId": "baxi_800_combi_25kw",
+      "brand": "Baxi",
+      "modelName": "800 Combi 2 25kW",
       "category": "boiler",
       "dimensions": {
-        "widthMm": 400,
-        "depthMm": 350,
-        "heightMm": 850
+        "widthMm": 390,
+        "depthMm": 295,
+        "heightMm": 700
       },
       "clearanceRules": {
         "frontMm": 600,
-        "sideMm": 10,
+        "sideMm": 5,
         "topMm": 200,
         "bottomMm": 200
       },
-      "outputKw": 26,
-      "notes": "Wall-hung combi. Dimensions from Viessmann technical data sheet B2HA 045 (2023)."
+      "outputKw": 25,
+      "notes": "Wall-hung combi. Same casing as 30kW variant. Dimensions from Baxi 800 installation guide 7219283 (2024)."
+    },
+    {
+      "schemaVersion": "1.0",
+      "modelId": "baxi_platinum_combi_28kw",
+      "brand": "Baxi",
+      "modelName": "Platinum Combi 28kW",
+      "category": "boiler",
+      "dimensions": {
+        "widthMm": 400,
+        "depthMm": 310,
+        "heightMm": 720
+      },
+      "clearanceRules": {
+        "frontMm": 600,
+        "sideMm": 5,
+        "topMm": 200,
+        "bottomMm": 200
+      },
+      "outputKw": 28,
+      "notes": "Wall-hung combi. Premium Baxi range. Dimensions from Baxi Platinum installation guide 7220573 (2023)."
     },
     {
       "schemaVersion": "1.0",

@@ -86,9 +86,21 @@ public struct ScanToMindHandoffWarningV1: Codable, Sendable, Equatable {
 /// Contains the visit identity, readiness flags, capture evidence, and optional
 /// warnings produced during capture.  No engine outputs, recommendation scores,
 /// proposal design state, or derived values belong here.
+///
+/// The optional `handoffId` is a stable UUID for this specific handoff record,
+/// distinct from `visit.visitId`.  When present it allows the iOS app to fetch
+/// an existing session from the Mind D1 API using either the `handoffId` or
+/// `visit.visitId` — supporting the bi-directional recall flow
+/// (`atlasscan://recall?visitId=...`).
 public struct ScanToMindHandoffV1: Codable, Sendable, Equatable {
     /// Contract version discriminant — always "1.0".
     public let version: String
+    /// Stable UUID for this handoff record (optional).
+    ///
+    /// Assigned by Mind when the handoff is persisted.  The Scan app can use
+    /// this as the primary key when recalling a session (`atlasscan://recall`),
+    /// falling back to `visit.visitId` if absent.
+    public let handoffId: String?
     /// Metadata describing the handoff context.
     public let meta: ScanToMindHandoffMetaV1
     /// The visit identity record produced by Atlas Scan.
@@ -102,6 +114,7 @@ public struct ScanToMindHandoffV1: Codable, Sendable, Equatable {
 
     public init(
         version: String = "1.0",
+        handoffId: String? = nil,
         meta: ScanToMindHandoffMetaV1,
         visit: AtlasVisitV1,
         readiness: AtlasVisitReadinessV1,
@@ -109,6 +122,7 @@ public struct ScanToMindHandoffV1: Codable, Sendable, Equatable {
         warnings: [ScanToMindHandoffWarningV1]? = nil
     ) {
         self.version = version
+        self.handoffId = handoffId
         self.meta = meta
         self.visit = visit
         self.readiness = readiness
